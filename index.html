@@ -9,133 +9,132 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
-        body { font-family: 'Fredoka', sans-serif; background-color: #0f172a; color: white; }
-        .rope-container { position: relative; height: 160px; width: 100%; overflow: hidden; }
-        .rope { position: absolute; top: 50%; height: 16px; background: #d97706; transform: translateY(-50%); width: 200%; left: -50%; border-radius: 8px; border: 3px solid #78350f; }
-        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 36px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.4s ease-out; }
-        .player-left { position: absolute; left: 10%; bottom: 20px; transition: left 0.4s ease-out; }
-        .player-right { position: absolute; right: 10%; bottom: 20px; transition: right 0.4s ease-out; }
-        .bracket-node { min-width: 200px; border-radius: 8px; font-size: 0.85rem; }
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        body { font-family: 'Fredoka', sans-serif; background-color: #0f172a; color: white; overflow: hidden; height: 100vh; }
+        .rope-container { position: relative; height: 130px; width: 100%; overflow: hidden; }
+        .rope { position: absolute; top: 50%; height: 14px; background: #d97706; transform: translateY(-50%); width: 200%; left: -50%; border-radius: 7px; border: 2px solid #78350f; }
+        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 32px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.4s ease-out; }
+        .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.4s ease-out; }
+        .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.4s ease-out; }
+        .bracket-node { min-width: 180px; border-radius: 8px; font-size: 0.8rem; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     </style>
 </head>
-<body class="h-screen flex flex-col justify-between custom-scrollbar">
+<body class="h-screen w-screen flex flex-col justify-between select-none">
 
     <!-- HEADER -->
-    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-lg flex justify-between items-center">
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-2.5 shadow-lg flex justify-between items-center shrink-0">
         <div class="flex items-center space-x-3">
-            <i class="fa-solid fa-trophy text-amber-400 text-3xl"></i>
+            <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
             <div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA</h1>
-                <p class="text-xs text-slate-400">Kelas 4 SD - Opsi A & B (+, -, ×, ÷)</p>
+                <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA</h1>
+                <p class="text-[11px] text-slate-400">Kelas 4 SD - Opsi A & B (+, -, ×, ÷)</p>
             </div>
         </div>
         <div class="flex space-x-2">
-            <button onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-                <i class="fa-solid fa-sitemap"></i> Bagan Turnamen
+            <button onclick="toggleFullScreen()" id="fs-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-expand" id="fs-icon"></i> Full Screen
             </button>
-            <button onclick="resetTournament()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+            <button onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-sitemap"></i> Bagan
+            </button>
+            <button onclick="resetTournament()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-rotate-right"></i> Acak Ulang
             </button>
         </div>
     </header>
 
-    <!-- MAIN VIEW -->
-    <main class="flex-1 overflow-auto p-4">
+    <!-- MAIN CONTAINER (NO SCROLL OUT OF BOUNDS) -->
+    <main class="flex-1 overflow-hidden p-3 flex flex-col">
         
         <!-- BAGAN TURNAMEN VIEW -->
         <div id="bracket-view" class="h-full flex flex-col">
-            <div class="mb-4 flex justify-between items-center bg-slate-800 p-3 rounded-xl border border-slate-700">
-                <div id="tournament-status" class="text-sm font-semibold text-amber-400">
-                    <i class="fa-solid fa-info-circle mr-1"></i> Klik tombol "MULAI DUEL" untuk menandingkan siswa.
+            <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
+                <div id="tournament-status" class="text-xs font-semibold text-amber-400">
+                    <i class="fa-solid fa-info-circle mr-1"></i> Klik tombol "DUEL" pada bagan untuk memulai pertandingan.
                 </div>
                 <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count">45</span> Siswa</div>
             </div>
 
-            <div class="flex-1 overflow-x-auto custom-scrollbar p-4 bg-slate-900/50 rounded-2xl border border-slate-800 flex items-center">
-                <div id="bracket-tree" class="flex space-x-12 min-w-max items-center justify-around w-full">
+            <div class="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar bg-slate-900/50 rounded-xl border border-slate-800 flex items-center px-4">
+                <div id="bracket-tree" class="flex space-x-8 min-w-max items-center justify-around w-full">
                     <!-- Dynamic Bracket Rendered Here -->
                 </div>
             </div>
         </div>
 
         <!-- ARENA PERTANDINGAN VIEW -->
-        <div id="arena-view" class="hidden h-full flex flex-col justify-between max-w-5xl mx-auto">
+        <div id="arena-view" class="hidden h-full flex flex-col justify-between max-w-4xl mx-auto w-full py-1">
             
             <!-- INFO BABAK & SKOR -->
-            <div class="flex justify-between items-center bg-slate-800/80 backdrop-blur p-4 rounded-xl border border-slate-700">
-                <div class="text-left flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xl border-2 border-blue-400" id="p1-avatar">P1</div>
+            <div class="flex justify-between items-center bg-slate-800/80 backdrop-blur px-4 py-2.5 rounded-xl border border-slate-700 shrink-0">
+                <div class="text-left flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-base border-2 border-blue-400">P1</div>
                     <div>
-                        <h3 id="p1-name" class="font-bold text-lg text-blue-400">Pemain 1</h3>
-                        <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Skor: <span id="p1-score">0</span></span>
+                        <h3 id="p1-name" class="font-bold text-sm text-blue-400 truncate max-w-[150px]">Pemain 1</h3>
+                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Skor: <span id="p1-score">0</span></span>
                     </div>
                 </div>
 
                 <div class="text-center">
-                    <span id="current-match-round" class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider">Babak Penyisihan</span>
-                    <h2 class="text-2xl font-black text-slate-200 mt-1">DUEL TARIK TAMBANG</h2>
-                    <button onclick="skipCurrentMatchPrompt()" class="mt-1 text-xs text-rose-400 hover:text-rose-300 underline font-medium">
-                        <i class="fa-solid fa-user-slash mr-1"></i> Ada Siswa Tidak Hadir? (Skip / WO)
+                    <span id="current-match-round" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">Babak Penyisihan</span>
+                    <h2 class="text-lg font-black text-slate-200 leading-tight mt-0.5">DUEL TARIK TAMBANG</h2>
+                    <button onclick="skipCurrentMatchPrompt()" class="text-[11px] text-rose-400 hover:text-rose-300 underline font-medium">
+                        <i class="fa-solid fa-user-slash mr-1"></i> Siswa Tidak Hadir? (WO)
                     </button>
                 </div>
 
-                <div class="text-right flex items-center gap-3 flex-row-reverse">
-                    <div class="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center font-bold text-xl border-2 border-red-400" id="p2-avatar">P2</div>
+                <div class="text-right flex items-center gap-2.5 flex-row-reverse">
+                    <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-base border-2 border-red-400">P2</div>
                     <div>
-                        <h3 id="p2-name" class="font-bold text-lg text-red-400">Pemain 2</h3>
-                        <span class="text-xs bg-red-950 text-red-300 px-2 py-0.5 rounded border border-red-800">Skor: <span id="p2-score">0</span></span>
+                        <h3 id="p2-name" class="font-bold text-sm text-red-400 truncate max-w-[150px]">Pemain 2</h3>
+                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Skor: <span id="p2-score">0</span></span>
                     </div>
                 </div>
             </div>
 
             <!-- VISUAL ARENA TARIK TAMBANG -->
-            <div class="my-auto bg-slate-800/40 rounded-2xl border border-slate-700/50 p-6 relative">
-                <div class="flex justify-between mb-2 text-xs font-semibold text-slate-400">
-                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> ZONA MENANG P1</span>
+            <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-4 relative shrink-0">
+                <div class="flex justify-between mb-1.5 text-[11px] font-semibold text-slate-400">
+                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> ZONA P1</span>
                     <span class="text-amber-400">GARIS TENGAH</span>
-                    <span class="text-red-400">ZONA MENANG P2 <i class="fa-solid fa-arrow-right"></i></span>
+                    <span class="text-red-400">ZONA P2 <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
-                <div class="rope-container bg-slate-900 rounded-xl border border-slate-700">
+                <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
                     <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/50 z-0"></div>
                     <div class="rope"></div>
                     <div id="rope-flag" class="flag" style="left: 50%;"></div>
-                    <div id="player1-mascot" class="player-left text-4xl transform -scale-x-100">🏃‍♂️</div>
-                    <div id="player2-mascot" class="player-right text-4xl">🏃‍♀️</div>
+                    <div id="player1-mascot" class="player-left text-3xl transform -scale-x-100">🏃‍♂️</div>
+                    <div id="player2-mascot" class="player-right text-3xl">🏃‍♀️</div>
                 </div>
             </div>
 
             <!-- QUESTION AREA (2 PILIHAN: A & B) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 shrink-0 pb-1">
                 <!-- P1 CARD -->
-                <div id="p1-card" class="bg-slate-800 p-4 rounded-xl border-2 border-blue-500/50 transition duration-300">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Giliran Jawab: <span id="p1-turn-name">P1</span></span>
-                        <span id="p1-timer" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Ready</span>
+                <div id="p1-card" class="bg-slate-800 p-3 rounded-xl border-2 border-blue-500/50 transition duration-300">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-[11px] font-bold text-blue-400 uppercase tracking-wider">Giliran: <span id="p1-turn-name">P1</span></span>
+                        <span id="p1-timer" class="text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Ready</span>
                     </div>
-                    <div class="text-center py-3 bg-slate-900 rounded-lg border border-slate-700 mb-3">
-                        <span id="p1-math-question" class="text-2xl font-extrabold text-amber-300 font-mono">? + ?</span>
+                    <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2">
+                        <span id="p1-math-question" class="text-xl font-extrabold text-amber-300 font-mono">? + ?</span>
                     </div>
-                    <div id="p1-options" class="grid grid-cols-2 gap-3">
-                        <!-- 2 Options (A & B) -->
-                    </div>
+                    <div id="p1-options" class="grid grid-cols-2 gap-2"></div>
                 </div>
 
                 <!-- P2 CARD -->
-                <div id="p2-card" class="bg-slate-800 p-4 rounded-xl border-2 border-red-500/50 opacity-50 pointer-events-none transition duration-300">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-red-400 uppercase tracking-wider">Giliran Jawab: <span id="p2-turn-name">P2</span></span>
-                        <span id="p2-timer" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Menunggu...</span>
+                <div id="p2-card" class="bg-slate-800 p-3 rounded-xl border-2 border-red-500/50 opacity-50 pointer-events-none transition duration-300">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-[11px] font-bold text-red-400 uppercase tracking-wider">Giliran: <span id="p2-turn-name">P2</span></span>
+                        <span id="p2-timer" class="text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Menunggu...</span>
                     </div>
-                    <div class="text-center py-3 bg-slate-900 rounded-lg border border-slate-700 mb-3">
-                        <span id="p2-math-question" class="text-2xl font-extrabold text-amber-300 font-mono">? × ?</span>
+                    <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2">
+                        <span id="p2-math-question" class="text-xl font-extrabold text-amber-300 font-mono">? × ?</span>
                     </div>
-                    <div id="p2-options" class="grid grid-cols-2 gap-3">
-                        <!-- 2 Options (A & B) -->
-                    </div>
+                    <div id="p2-options" class="grid grid-cols-2 gap-2"></div>
                 </div>
             </div>
 
@@ -145,28 +144,27 @@
 
     <!-- MODAL SKIP / WO -->
     <div id="skip-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl">
-            <div class="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
                 <i class="fa-solid fa-user-slash"></i>
             </div>
-            <h3 class="text-xl font-bold mb-1 text-slate-100">Siswa Tidak Hadir (WO)</h3>
-            <p class="text-sm text-slate-400 mb-6">Pilih siswa yang tidak hadir untuk memberikan kemenangan otomatis.</p>
-            <div class="space-y-3 mb-6" id="skip-modal-options"></div>
-            <button onclick="closeSkipModal()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-semibold transition">Batal</button>
+            <h3 class="text-lg font-bold mb-1 text-slate-100">Siswa Tidak Hadir (WO)</h3>
+            <p class="text-xs text-slate-400 mb-4">Pilih siswa yang tidak hadir untuk memberikan kemenangan otomatis.</p>
+            <div class="space-y-2 mb-4" id="skip-modal-options"></div>
+            <button onclick="closeSkipModal()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold transition">Batal</button>
         </div>
     </div>
 
     <!-- MODAL PEMENANG -->
     <div id="winner-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 text-9xl text-amber-500/10"><i class="fa-solid fa-trophy"></i></div>
-            <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-amber-500">
+        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl relative overflow-hidden">
+            <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl border-2 border-amber-500">
                 <i class="fa-solid fa-crown"></i>
             </div>
-            <h2 id="winner-title" class="text-xs font-extrabold uppercase text-amber-400 tracking-widest mb-1">PEMENANG MATCH</h2>
-            <h1 id="winner-name" class="text-3xl font-black text-white mb-2">NAMA SISWA</h1>
-            <p id="winner-desc" class="text-sm text-slate-300 mb-6">Lolos ke babak berikutnya!</p>
-            <button onclick="closeWinnerModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-extrabold rounded-xl text-lg shadow-lg transition transform active:scale-95">
+            <h2 id="winner-title" class="text-[11px] font-extrabold uppercase text-amber-400 tracking-widest mb-1">PEMENANG MATCH</h2>
+            <h1 id="winner-name" class="text-2xl font-black text-white mb-1">NAMA SISWA</h1>
+            <p id="winner-desc" class="text-xs text-slate-300 mb-5">Lolos ke babak berikutnya!</p>
+            <button onclick="closeWinnerModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-extrabold rounded-xl text-sm shadow-lg transition">
                 Lanjutkan Turnamen <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
         </div>
@@ -225,7 +223,22 @@
             playSound(200, 'sawtooth', 0.2);
         }
 
-        // GENERATOR SOAL DENGAN 2 PILIHAN (A & B)
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Gagal masuk mode Full Screen: ${err.message}`);
+                });
+                document.getElementById('fs-icon').className = "fa-solid fa-compress";
+                document.getElementById('fs-btn').innerHTML = `<i class="fa-solid fa-compress"></i> Normal`;
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                document.getElementById('fs-icon').className = "fa-solid fa-expand";
+                document.getElementById('fs-btn').innerHTML = `<i class="fa-solid fa-expand"></i> Full Screen`;
+            }
+        }
+
         function generateMathQuestion() {
             const types = ['+', '-', 'x', ':'];
             const type = types[Math.floor(Math.random() * types.length)];
@@ -254,7 +267,6 @@
                     break;
             }
 
-            // HANYA 1 PENGECCOH (TOTAL 2 OPSI: A & B)
             let wrongOffset = (Math.floor(Math.random() * 4) + 1) * (Math.random() > 0.5 ? 1 : -1);
             let wrongAnswer = answer + wrongOffset;
             if (wrongAnswer < 0) wrongAnswer = answer + 2;
@@ -329,51 +341,51 @@
 
             tournamentTree.forEach((round, rIdx) => {
                 const roundCol = document.createElement('div');
-                roundCol.className = 'flex flex-col justify-around py-4 space-y-4';
+                roundCol.className = 'flex flex-col justify-around py-2 space-y-3';
                 
                 const title = document.createElement('h4');
-                title.className = 'text-center font-bold text-xs uppercase tracking-wider text-amber-400 mb-2 bg-slate-800 p-2 rounded border border-slate-700';
+                title.className = 'text-center font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-1.5 rounded border border-slate-700';
                 title.innerText = getRoundName(rIdx, tournamentTree.length);
                 roundCol.appendChild(title);
 
                 const matchesDiv = document.createElement('div');
-                matchesDiv.className = 'flex flex-col justify-around flex-1 space-y-6';
+                matchesDiv.className = 'flex flex-col justify-around flex-1 space-y-4';
 
                 round.forEach((m, mIdx) => {
                     const matchCard = document.createElement('div');
                     const isReady = m.p1 && m.p2 && !m.winner;
                     
-                    matchCard.className = `bracket-node p-3 border transition ${
+                    matchCard.className = `bracket-node p-2.5 border transition ${
                         m.winner ? 'bg-slate-800/60 border-slate-700 opacity-80' : 
                         isReady ? 'bg-indigo-950/80 border-indigo-500 shadow-lg ring-2 ring-indigo-400/30' : 'bg-slate-900 border-slate-800'
                     }`;
 
                     let statusBadge = '';
-                    if (m.winner) statusBadge = `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Selesai</span>`;
-                    else if (m.isBye) statusBadge = `<span class="text-[10px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded">BYE</span>`;
-                    else if (isReady) statusBadge = `<span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded animate-pulse">Siap</span>`;
+                    if (m.winner) statusBadge = `<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded">Selesai</span>`;
+                    else if (m.isBye) statusBadge = `<span class="text-[9px] bg-slate-700 text-slate-400 px-1 py-0.5 rounded">BYE</span>`;
+                    else if (isReady) statusBadge = `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 py-0.5 rounded animate-pulse">Siap</span>`;
 
                     matchCard.innerHTML = `
-                        <div class="flex justify-between items-center mb-1.5 border-b border-slate-700/50 pb-1">
-                            <span class="text-[10px] text-slate-400 font-mono">Match #${mIdx+1}</span>
+                        <div class="flex justify-between items-center mb-1 border-b border-slate-700/50 pb-1">
+                            <span class="text-[9px] text-slate-400 font-mono">Match #${mIdx+1}</span>
                             ${statusBadge}
                         </div>
                         <div class="space-y-1">
-                            <div class="flex justify-between items-center px-2 py-1 rounded ${m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
-                                <span class="truncate max-w-[130px]">${m.p1 || '<i class="text-slate-600">Menunggu</i>'}</span>
-                                ${m.winner === m.p1 ? '<i class="fa-solid fa-check text-xs text-emerald-400"></i>' : ''}
+                            <div class="flex justify-between items-center px-2 py-0.5 rounded text-xs ${m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[110px]">${m.p1 || '<i class="text-slate-600">Menunggu</i>'}</span>
+                                ${m.winner === m.p1 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
-                            <div class="flex justify-between items-center px-2 py-1 rounded ${m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
-                                <span class="truncate max-w-[130px]">${m.p2 || '<i class="text-slate-600">Menunggu</i>'}</span>
-                                ${m.winner === m.p2 ? '<i class="fa-solid fa-check text-xs text-emerald-400"></i>' : ''}
+                            <div class="flex justify-between items-center px-2 py-0.5 rounded text-xs ${m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[110px]">${m.p2 || '<i class="text-slate-600">Menunggu</i>'}</span>
+                                ${m.winner === m.p2 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
                         </div>
                         ${isReady ? `
                             <div class="mt-2 flex gap-1">
-                                <button onclick="startMatch(${rIdx}, ${mIdx})" class="flex-1 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded transition flex items-center justify-center gap-1">
+                                <button onclick="startMatch(${rIdx}, ${mIdx})" class="flex-1 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] rounded transition flex items-center justify-center gap-1">
                                     <i class="fa-solid fa-play"></i> DUEL
                                 </button>
-                                <button onclick="openSkipModalFromBracket(${rIdx}, ${mIdx})" title="Skip / WO" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 border border-rose-700 font-bold text-xs rounded transition">
+                                <button onclick="openSkipModalFromBracket(${rIdx}, ${mIdx})" title="Skip / WO" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 border border-rose-700 font-bold text-[11px] rounded transition">
                                     <i class="fa-solid fa-user-slash"></i>
                                 </button>
                             </div>
@@ -431,7 +443,6 @@
             }
         }
 
-        // RENDER PILIHAN HANYA A DAN B
         function renderQuestionCard(playerNum, qData) {
             document.getElementById(`p${playerNum}-math-question`).innerText = qData.question;
             const optsContainer = document.getElementById(`p${playerNum}-options`);
@@ -440,8 +451,8 @@
             const labels = ['A', 'B'];
             qData.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
-                btn.className = `py-3 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-extrabold text-xl transition border border-slate-600 active:scale-95 flex items-center justify-center gap-2`;
-                btn.innerHTML = `<span class="px-2 py-0.5 bg-slate-900 rounded text-amber-400 text-sm">${labels[index]}</span> ${opt}`;
+                btn.className = `py-2 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-extrabold text-lg transition border border-slate-600 active:scale-95 flex items-center justify-center gap-2`;
+                btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-xs">${labels[index]}</span> ${opt}`;
                 btn.onclick = () => handleAnswer(playerNum, opt === qData.answer);
                 optsContainer.appendChild(btn);
             });
@@ -478,8 +489,8 @@
             ropePosition = Math.max(-5, Math.min(5, ropePosition));
             const leftPercent = 50 + (ropePosition * 7);
             document.getElementById('rope-flag').style.left = `${leftPercent}%`;
-            document.getElementById('player1-mascot').style.left = `${Math.max(5, leftPercent - 35)}%`;
-            document.getElementById('player2-mascot').style.right = `${Math.max(5, (100 - leftPercent) - 35)}%`;
+            document.getElementById('player1-mascot').style.left = `${Math.max(5, leftPercent - 30)}%`;
+            document.getElementById('player2-mascot').style.right = `${Math.max(5, (100 - leftPercent) - 30)}%`;
         }
 
         function finishMatch(winnerName) {
@@ -526,13 +537,13 @@
         function showSkipModal() {
             const container = document.getElementById('skip-modal-options');
             container.innerHTML = `
-                <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-3 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-white transition flex items-center justify-between px-4">
+                <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-white transition flex items-center justify-between px-3 text-xs">
                     <span>${activeMatch.p1} Lolos (WO)</span>
-                    <span class="text-xs bg-blue-900 px-2 py-1 rounded text-blue-200">${activeMatch.p2} Tidak Hadir</span>
+                    <span class="text-[10px] bg-blue-900 px-1.5 py-0.5 rounded text-blue-200">${activeMatch.p2} Absen</span>
                 </button>
-                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-3 bg-red-600 hover:bg-red-500 font-bold rounded-xl text-white transition flex items-center justify-between px-4">
+                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2.5 bg-red-600 hover:bg-red-500 font-bold rounded-xl text-white transition flex items-center justify-between px-3 text-xs">
                     <span>${activeMatch.p2} Lolos (WO)</span>
-                    <span class="text-xs bg-red-900 px-2 py-1 rounded text-red-200">${activeMatch.p1} Tidak Hadir</span>
+                    <span class="text-[10px] bg-red-900 px-1.5 py-0.5 rounded text-red-200">${activeMatch.p1} Absen</span>
                 </button>
             `;
             document.getElementById('skip-modal').classList.remove('hidden');
