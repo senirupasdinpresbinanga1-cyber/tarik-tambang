@@ -3,937 +3,557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turnamen Tarik Tambang Matematika SD Kelas 4</title>
-    <!-- Tailwind CSS -->
+    <title>Turnamen Tarik Tambang Matematika Kelas 4 SD</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        fredoka: ['"Fredoka One"', 'cursive'],
-                        quicksand: ['"Quicksand"', 'sans-serif'],
-                    },
-                    colors: {
-                        brandYellow: '#FFD166',
-                        brandBlue: '#118AB2',
-                        brandGreen: '#06D6A0',
-                        brandRed: '#EF476F',
-                        brandDark: '#073B4C',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/canvas.browser.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 100%);
-            min-height: 100vh;
-        }
-        .title-font {
-            font-family: 'Fredoka One', cursive;
-        }
-        /* Custom Scrollbar for Bracket */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #118AB2;
-            border-radius: 10px;
-        }
-        /* Rope and Tug Animations */
-        .rope-container {
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .pull-left-anim {
-            animation: pullLeft 0.3s ease-in-out;
-        }
-        .pull-right-anim {
-            animation: pullRight 0.3s ease-in-out;
-        }
-        @keyframes pullLeft {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(-25px) rotate(-3deg); }
-            100% { transform: translateX(0); }
-        }
-        @keyframes pullRight {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(25px) rotate(3deg); }
-            100% { transform: translateX(0); }
-        }
-        .shake {
-            animation: shake 0.4s ease-in-out;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        body { font-family: 'Fredoka', sans-serif; background-color: #0f172a; color: white; }
+        .rope-container { position: relative; height: 160px; width: 100%; overflow: hidden; }
+        .rope { position: absolute; top: 50%; height: 16px; background: #d97706; transform: translateY(-50%); width: 200%; left: -50%; border-radius: 8px; border: 3px solid #78350f; }
+        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 36px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.4s ease-out; }
+        .player-left { position: absolute; left: 10%; bottom: 20px; transition: left 0.4s ease-out; }
+        .player-right { position: absolute; right: 10%; bottom: 20px; transition: right 0.4s ease-out; }
+        .bracket-node { min-width: 200px; border-radius: 8px; font-size: 0.85rem; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
 </head>
-<body class="text-slate-800 flex flex-col min-h-screen">
+<body class="h-screen flex flex-col justify-between custom-scrollbar">
 
-    <!-- Header Navigation -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-sky-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-gradient-to-tr from-amber-400 to-rose-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg transform rotate-3">
-                    <i class="fa-solid fa-trophy"></i>
-                </div>
-                <div>
-                    <h1 class="title-font text-2xl md:text-3xl text-brandDark tracking-wide">Piala Tarik Tambang Math</h1>
-                    <p class="text-xs font-semibold text-sky-600">Turnamen Matematika SD Kelas 4</p>
-                </div>
+    <!-- HEADER -->
+    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-lg flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-trophy text-amber-400 text-3xl"></i>
+            <div>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA</h1>
+                <p class="text-xs text-slate-400">Kelas 4 SD - Opsi A & B (+, -, ×, ÷)</p>
             </div>
-
-            <div class="flex items-center gap-2">
-                <button id="nav-bracket-btn" onclick="switchTab('bracket')" class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-brandBlue text-white shadow-md">
-                    <i class="fa-solid fa-sitemap"></i>
-                    <span>Bagan Turnamen</span>
-                </button>
-                <button id="nav-arena-btn" onclick="switchTab('arena')" class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-slate-200 text-slate-700 hover:bg-slate-300">
-                    <i class="fa-solid fa-gamepad"></i>
-                    <span>Arena Duel</span>
-                </button>
-                <button onclick="resetWholeTournament()" class="px-3 py-2 rounded-xl font-bold bg-rose-100 text-rose-600 hover:bg-rose-200 transition text-sm">
-                    <i class="fa-solid fa-rotate-left"></i> Reset
-                </button>
-            </div>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                <i class="fa-solid fa-sitemap"></i> Bagan Turnamen
+            </button>
+            <button onclick="resetTournament()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Acak Ulang
+            </button>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col">
-
-        <!-- SECTION 1: BRACKET VIEW -->
-        <section id="view-bracket" class="flex-grow flex flex-col gap-6">
-            <!-- Control Banner -->
-            <div class="bg-white rounded-3xl p-6 shadow-xl border border-sky-100 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 class="title-font text-xl md:text-2xl text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-users text-amber-500"></i> Daftar Peserta Turnamen (<span id="total-participants-count">0</span> Siswa)
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1">Acak undian bagan turnamen babak gugur (FIFA Cup Style) untuk memulai pertandingan!</p>
+    <!-- MAIN VIEW -->
+    <main class="flex-1 overflow-auto p-4">
+        
+        <!-- BAGAN TURNAMEN VIEW -->
+        <div id="bracket-view" class="h-full flex flex-col">
+            <div class="mb-4 flex justify-between items-center bg-slate-800 p-3 rounded-xl border border-slate-700">
+                <div id="tournament-status" class="text-sm font-semibold text-amber-400">
+                    <i class="fa-solid fa-info-circle mr-1"></i> Klik tombol "MULAI DUEL" untuk menandingkan siswa.
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button onclick="shuffleAndGenerateBracket()" class="px-5 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold rounded-2xl shadow-lg transform hover:-translate-y-0.5 transition flex items-center gap-2">
-                        <i class="fa-solid fa-dice"></i>
-                        <span>Acak Undian (Draw Cup)</span>
-                    </button>
-                    <button id="start-match-btn" onclick="startCurrentMatch()" class="hidden px-5 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold rounded-2xl shadow-lg transform hover:-translate-y-0.5 transition flex items-center gap-2 animate-bounce">
-                        <i class="fa-solid fa-play"></i>
-                        <span id="next-match-label">Mulai Duel Berikutnya</span>
-                    </button>
-                </div>
+                <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count">45</span> Siswa</div>
             </div>
 
-            <!-- Bracket Scrollable Viewer -->
-            <div class="bg-white/70 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-sky-100 flex-grow overflow-x-auto min-h-[500px] flex items-center">
-                <div id="bracket-container" class="flex gap-8 min-w-max mx-auto py-4 items-center">
-                    <!-- Bracket nodes populated by JS -->
-                    <div class="text-center text-slate-400 py-12 px-8">
-                        <i class="fa-solid fa-trophy text-6xl text-amber-300 mb-4 animate-pulse"></i>
-                        <p class="text-lg font-bold text-slate-600">Belum ada bagan turnamen.</p>
-                        <p class="text-sm text-slate-400">Klik tombol <strong>"Acak Undian (Draw Cup)"</strong> di atas untuk membuat bagan pertandingan!</p>
+            <div class="flex-1 overflow-x-auto custom-scrollbar p-4 bg-slate-900/50 rounded-2xl border border-slate-800 flex items-center">
+                <div id="bracket-tree" class="flex space-x-12 min-w-max items-center justify-around w-full">
+                    <!-- Dynamic Bracket Rendered Here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ARENA PERTANDINGAN VIEW -->
+        <div id="arena-view" class="hidden h-full flex flex-col justify-between max-w-5xl mx-auto">
+            
+            <!-- INFO BABAK & SKOR -->
+            <div class="flex justify-between items-center bg-slate-800/80 backdrop-blur p-4 rounded-xl border border-slate-700">
+                <div class="text-left flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xl border-2 border-blue-400" id="p1-avatar">P1</div>
+                    <div>
+                        <h3 id="p1-name" class="font-bold text-lg text-blue-400">Pemain 1</h3>
+                        <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Skor: <span id="p1-score">0</span></span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <span id="current-match-round" class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider">Babak Penyisihan</span>
+                    <h2 class="text-2xl font-black text-slate-200 mt-1">DUEL TARIK TAMBANG</h2>
+                    <button onclick="skipCurrentMatchPrompt()" class="mt-1 text-xs text-rose-400 hover:text-rose-300 underline font-medium">
+                        <i class="fa-solid fa-user-slash mr-1"></i> Ada Siswa Tidak Hadir? (Skip / WO)
+                    </button>
+                </div>
+
+                <div class="text-right flex items-center gap-3 flex-row-reverse">
+                    <div class="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center font-bold text-xl border-2 border-red-400" id="p2-avatar">P2</div>
+                    <div>
+                        <h3 id="p2-name" class="font-bold text-lg text-red-400">Pemain 2</h3>
+                        <span class="text-xs bg-red-950 text-red-300 px-2 py-0.5 rounded border border-red-800">Skor: <span id="p2-score">0</span></span>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- SECTION 2: DUEL ARENA (TUG OF WAR) VIEW -->
-        <section id="view-arena" class="hidden flex-grow flex-col gap-6">
-            <!-- Top Match Header Status -->
-            <div class="bg-white rounded-3xl p-4 md:p-6 shadow-xl border border-sky-100 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <span id="match-round-badge" class="px-3 py-1 bg-sky-100 text-sky-700 font-bold rounded-full text-sm">Babak Penyisihan</span>
-                    <h2 class="title-font text-lg md:text-xl text-slate-800">Tarik Tambang 1 vs 1</h2>
+            <!-- VISUAL ARENA TARIK TAMBANG -->
+            <div class="my-auto bg-slate-800/40 rounded-2xl border border-slate-700/50 p-6 relative">
+                <div class="flex justify-between mb-2 text-xs font-semibold text-slate-400">
+                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> ZONA MENANG P1</span>
+                    <span class="text-amber-400">GARIS TENGAH</span>
+                    <span class="text-red-400">ZONA MENANG P2 <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
-                <div class="text-right">
-                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">Target Kemenangan</span>
-                    <span class="text-sm font-bold text-emerald-600">Unggul 3 Poin / Tarikan</span>
-                </div>
-            </div>
-
-            <!-- Tug of War Stage -->
-            <div class="bg-gradient-to-b from-sky-300 via-sky-100 to-emerald-200 rounded-3xl p-6 shadow-xl border-4 border-white relative overflow-hidden flex flex-col justify-between min-h-[360px]">
                 
-                <!-- Background decoration elements -->
-                <div class="absolute top-4 left-10 text-white/40 text-6xl"><i class="fa-solid fa-cloud"></i></div>
-                <div class="absolute top-8 right-16 text-white/50 text-5xl"><i class="fa-solid fa-cloud"></i></div>
-
-                <!-- Scores & Names Top Display -->
-                <div class="grid grid-cols-2 gap-4 relative z-10">
-                    <!-- Player 1 Info (Left) -->
-                    <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border-l-8 border-indigo-500 flex items-center justify-between">
-                        <div>
-                            <span class="text-xs font-bold text-indigo-500 uppercase">Pemain 1 (Kiri)</span>
-                            <h3 id="p1-name" class="title-font text-xl md:text-2xl text-slate-800 truncate max-w-[200px]">Nama Pemain 1</h3>
-                        </div>
-                        <div class="text-right">
-                            <span id="p1-score" class="title-font text-3xl md:text-4xl text-indigo-600">0</span>
-                            <span class="text-xs text-slate-400 block font-bold">POIN</span>
-                        </div>
-                    </div>
-
-                    <!-- Player 2 Info (Right) -->
-                    <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border-r-8 border-rose-500 flex items-center justify-between">
-                        <div class="text-left">
-                            <span id="p2-score" class="title-font text-3xl md:text-4xl text-rose-600">0</span>
-                            <span class="text-xs text-slate-400 block font-bold">POIN</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-rose-500 uppercase">Pemain 2 (Kanan)</span>
-                            <h3 id="p2-name" class="title-font text-xl md:text-2xl text-slate-800 truncate max-w-[200px]">Nama Pemain 2</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Interactive Tug Arena Graphics -->
-                <div class="my-8 relative flex items-center justify-center min-h-[140px]">
-                    <!-- Center Line Marker -->
-                    <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-dashed bg-rose-400/60 border-r-2 border-dashed border-rose-500 z-0"></div>
-                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">GARIS TENGAH</div>
-
-                    <!-- Dynamic Rope Container -->
-                    <div id="rope-stage" class="rope-container w-full max-w-2xl flex items-center justify-center relative z-10">
-                        <!-- Left Character -->
-                        <div id="char-left" class="flex flex-col items-center">
-                            <div class="w-16 h-16 md:w-20 md:h-20 bg-indigo-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-3xl md:text-4xl">
-                                👦
-                            </div>
-                            <span class="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-md mt-1 shadow">KIRI</span>
-                        </div>
-
-                        <!-- Main Rope Graphics -->
-                        <div class="flex-grow h-4 bg-amber-800 border-y-2 border-amber-950 rounded-full relative flex items-center justify-center shadow-md mx-2">
-                            <!-- Center Red Ribbon / Flag -->
-                            <div id="rope-flag" class="w-6 h-8 bg-rose-600 border-2 border-white rounded-sm shadow-md flex items-center justify-center text-white text-xs">
-                                🚩
-                            </div>
-                        </div>
-
-                        <!-- Right Character -->
-                        <div id="char-right" class="flex flex-col items-center">
-                            <div class="w-16 h-16 md:w-20 md:h-20 bg-rose-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-3xl md:text-4xl">
-                                👧
-                            </div>
-                            <span class="bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-md mt-1 shadow">KANAN</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tug Progress Indicator -->
-                <div class="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden relative border border-white shadow-inner">
-                    <div id="tug-bar-left" class="bg-indigo-500 h-full transition-all duration-300 float-left" style="width: 50%;"></div>
-                    <div id="tug-bar-right" class="bg-rose-500 h-full transition-all duration-300 float-right" style="width: 50%;"></div>
+                <div class="rope-container bg-slate-900 rounded-xl border border-slate-700">
+                    <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/50 z-0"></div>
+                    <div class="rope"></div>
+                    <div id="rope-flag" class="flag" style="left: 50%;"></div>
+                    <div id="player1-mascot" class="player-left text-4xl transform -scale-x-100">🏃‍♂️</div>
+                    <div id="player2-mascot" class="player-right text-4xl">🏃‍♀️</div>
                 </div>
             </div>
 
-            <!-- MATH QUESTION BOXES (DUAL SCREEN / TURN BASED) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Left Player Control Box -->
-                <div id="box-p1" class="bg-white rounded-3xl p-6 shadow-xl border-2 border-indigo-200 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Giliran Kiri (P1)</span>
-                            <span class="text-xs font-semibold text-slate-400" id="p1-op-label">Soal Tambah/Kurang</span>
-                        </div>
-                        <div class="bg-indigo-50/50 rounded-2xl p-4 text-center mb-4 border border-indigo-100">
-                            <span class="text-xs text-slate-400 block font-semibold mb-1">Berapakah hasil dari:</span>
-                            <div id="p1-question" class="title-font text-3xl md:text-4xl text-indigo-900 tracking-wider">12 + 15 = ?</div>
-                        </div>
-                        <!-- Answer Options -->
-                        <div id="p1-options" class="grid grid-cols-2 gap-3">
-                            <!-- Populated dynamically -->
-                        </div>
+            <!-- QUESTION AREA (2 PILIHAN: A & B) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- P1 CARD -->
+                <div id="p1-card" class="bg-slate-800 p-4 rounded-xl border-2 border-blue-500/50 transition duration-300">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Giliran Jawab: <span id="p1-turn-name">P1</span></span>
+                        <span id="p1-timer" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Ready</span>
+                    </div>
+                    <div class="text-center py-3 bg-slate-900 rounded-lg border border-slate-700 mb-3">
+                        <span id="p1-math-question" class="text-2xl font-extrabold text-amber-300 font-mono">? + ?</span>
+                    </div>
+                    <div id="p1-options" class="grid grid-cols-2 gap-3">
+                        <!-- 2 Options (A & B) -->
                     </div>
                 </div>
 
-                <!-- Right Player Control Box -->
-                <div id="box-p2" class="bg-white rounded-3xl p-6 shadow-xl border-2 border-rose-200 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-bold bg-rose-100 text-rose-700 px-3 py-1 rounded-full">Giliran Kanan (P2)</span>
-                            <span class="text-xs font-semibold text-slate-400" id="p2-op-label">Soal Kali/Bagi</span>
-                        </div>
-                        <div class="bg-rose-50/50 rounded-2xl p-4 text-center mb-4 border border-rose-100">
-                            <span class="text-xs text-slate-400 block font-semibold mb-1">Berapakah hasil dari:</span>
-                            <div id="p2-question" class="title-font text-3xl md:text-4xl text-rose-900 tracking-wider">8 × 7 = ?</div>
-                        </div>
-                        <!-- Answer Options -->
-                        <div id="p2-options" class="grid grid-cols-2 gap-3">
-                            <!-- Populated dynamically -->
-                        </div>
+                <!-- P2 CARD -->
+                <div id="p2-card" class="bg-slate-800 p-4 rounded-xl border-2 border-red-500/50 opacity-50 pointer-events-none transition duration-300">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-red-400 uppercase tracking-wider">Giliran Jawab: <span id="p2-turn-name">P2</span></span>
+                        <span id="p2-timer" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">Menunggu...</span>
+                    </div>
+                    <div class="text-center py-3 bg-slate-900 rounded-lg border border-slate-700 mb-3">
+                        <span id="p2-math-question" class="text-2xl font-extrabold text-amber-300 font-mono">? × ?</span>
+                    </div>
+                    <div id="p2-options" class="grid grid-cols-2 gap-3">
+                        <!-- 2 Options (A & B) -->
                     </div>
                 </div>
             </div>
-        </section>
+
+        </div>
 
     </main>
 
-    <!-- Modal Dialog Winner Winner -->
-    <div id="winner-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-amber-300 transform transition-all animate-bounce-short">
-            <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-4 border-amber-300 shadow-inner">
-                🏆
+    <!-- MODAL SKIP / WO -->
+    <div id="skip-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl">
+            <div class="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-user-slash"></i>
             </div>
-            <h3 class="title-font text-2xl text-slate-800 mb-1" id="winner-modal-title">PEMENANG DUEL!</h3>
-            <p class="text-slate-500 text-sm mb-4" id="winner-modal-desc">Selamat kepada pemenang pertandingan ini!</p>
+            <h3 class="text-xl font-bold mb-1 text-slate-100">Siswa Tidak Hadir (WO)</h3>
+            <p class="text-sm text-slate-400 mb-6">Pilih siswa yang tidak hadir untuk memberikan kemenangan otomatis.</p>
+            <div class="space-y-3 mb-6" id="skip-modal-options"></div>
+            <button onclick="closeSkipModal()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-semibold transition">Batal</button>
+        </div>
+    </div>
 
-            <div class="bg-amber-50 rounded-2xl p-4 mb-6 border border-amber-200">
-                <span class="text-xs text-amber-700 font-bold uppercase tracking-wider block">Pemenang Lolos</span>
-                <span id="winner-name-display" class="title-font text-2xl text-amber-900">NAMA PEMENANG</span>
+    <!-- MODAL PEMENANG -->
+    <div id="winner-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 text-9xl text-amber-500/10"><i class="fa-solid fa-trophy"></i></div>
+            <div class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl border-2 border-amber-500">
+                <i class="fa-solid fa-crown"></i>
             </div>
-
-            <button onclick="closeWinnerModalAndReturn()" class="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg transition">
-                Lanjut ke Bagan Turnamen
+            <h2 id="winner-title" class="text-xs font-extrabold uppercase text-amber-400 tracking-widest mb-1">PEMENANG MATCH</h2>
+            <h1 id="winner-name" class="text-3xl font-black text-white mb-2">NAMA SISWA</h1>
+            <p id="winner-desc" class="text-sm text-slate-300 mb-6">Lolos ke babak berikutnya!</p>
+            <button onclick="closeWinnerModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-extrabold rounded-xl text-lg shadow-lg transition transform active:scale-95">
+                Lanjutkan Turnamen <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
         </div>
     </div>
 
-    <!-- Modal Champion Grand Final Winner -->
-    <div id="champion-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl border-4 border-amber-400">
-            <div class="w-24 h-24 bg-gradient-to-tr from-amber-400 to-yellow-200 text-amber-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-xl border-4 border-white animate-bounce">
-                👑
-            </div>
-            <span class="px-4 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full uppercase tracking-wider">JUARA UTAMA TURNAMEN</span>
-            <h2 class="title-font text-3xl text-slate-800 mt-2 mb-1">SELAMAT!</h2>
-            <h3 id="champion-name" class="title-font text-3xl text-amber-600 mb-6">NAMA JUARA 1</h3>
-
-            <!-- Podiums List -->
-            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                <div class="bg-slate-100 p-3 rounded-2xl border border-slate-200">
-                    <span class="text-xl block">🥈</span>
-                    <span class="text-xs text-slate-400 font-bold block">JUARA 2</span>
-                    <span id="runnerup-name" class="font-bold text-sm text-slate-700 truncate block">Runner Up</span>
-                </div>
-                <div class="bg-amber-100 p-3 rounded-2xl border border-amber-300">
-                    <span class="text-xl block">🥇</span>
-                    <span class="text-xs text-amber-600 font-bold block">JUARA 1</span>
-                    <span id="champion-name-mini" class="font-bold text-sm text-amber-900 truncate block">Juara 1</span>
-                </div>
-                <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
-                    <span class="text-xl block">🥉</span>
-                    <span class="text-xs text-amber-700 font-bold block">SEMI FINALIST</span>
-                    <span id="sf-names" class="font-bold text-xs text-slate-700 truncate block">Top 4</span>
-                </div>
-            </div>
-
-            <div class="flex gap-3">
-                <button onclick="closeChampionModal()" class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-sm">
-                    Lihat Hasil Bagan
-                </button>
-                <button onclick="shuffleAndGenerateBracket(); closeChampionModal();" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-lg text-sm">
-                    Mainkan Turnamen Baru
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // List Raw Peserta Kelas 4 SD
         const RAW_STUDENTS = [
-            "ALIFHA DZATIL IZZAH", "ALIQA MUKHBITA HULOPI", "ALIYAH MANORA YALTAB", "GIBRAN AMMAR FAJAR ABDILLAH", 
-            "ASKANA HAFIKA PUTRI I", "AZKADINA AZZAHRA AMR...", "FATHAN AL MAISAN ZHAFA...", "HAFIZ ZIKRI ALIF I", 
-            "KHUMAIRAH AIYSAH ZAHR...", "M. NANDAR", "MUH FANAUNGI", "MUH FAYYADH AB QARI", "MUH GIBRAN AL FATIH", 
-            "MUH. RIFAI ZAQI", "NADYA ALYSSA AZZAHRA", "NUR IBNU HALIF", "NUR SAKINAH", "RATU AFIFAH ZULAIN", 
-            "RATU VARISHA WAHYUDI", "SOFIYA SAHIRAH", "ST GHINA GHANIA KH", "YAZID AKMAL AL KAUTSAR", 
-            "ABELIA DWI AZ ZAHRA", "AFIQAH ZAHRA", "ALULA FARZANA RAQIL RAFIF", "CAHAYA ANGGUN RAMADHAN", 
-            "CHAERUL AQSYA", "DZIHAN UBAIDILLAH SHADIQ ALIA...", "FADIL RAHMAN", "FATHIR AL ICHSAN", 
-            "FITRAH", "GALANG AL ALAQ PRATAMA", "GILANG AL KHALIQ PRATAMA", "HIJRIANA ARFA", "MAYA FAIZAH RUSADY", 
-            "MUH FAQIH SAPUTRA", "MUH HABIB RIDHO", "MUH REZA ADITYA", "MUHAMMAD ANDRA RAFA PRATAM...", 
-            "MUHAMMAD AZKA A MAJID", "QAYLA ANISA PUTRI Z", "RAISA ATIQAH BALQIS", "SAKIA", "RAHMAT HIDAYAT", "FAIRUS MAHMUDDIN"
+            "ALIFHA DZATIL IZZAH", "ALIQA MUKHBITA HULOPI", "ALIYAH MANORA YALTAB", 
+            "GIBRAN AMMAR FAJAR ABDILLAH", "ASKANA HAFIKA PUTRI IAZKADINA", "AZZAHRA AMR...", 
+            "FATHAN AL MAISAN ZHAFA...", "HAFIZ ZIKRI ALIF I", "KHUMAIRAH AIYSAH ZAHR...", 
+            "M. NANDAR", "MUH FANAUNGI", "MUH FAYYADH AB QARI", "MUH GIBRAN AL FATIH", 
+            "MUH. RIFAI ZAQI", "NADYA ALYSSA AZZAHRA", "NUR IBNU HALIF", "NUR SAKINAH", 
+            "RATU AFIFAH ZULAINI", "RATU VARISHA WAHYUDI", "SOFIYA SAHIRAH", "ST GHINA GHANIA KH", 
+            "YAZID AKMAL AL KAUTSAR", "ABELIA DWI AZ ZAHRA", "AFIQAH ZAHRA", "ALULA FARZANA RAQIL", 
+            "RAFIF CAHAYA ANGGUN RAMADHAN", "CHAERUL AQSYAD", "ZIHAN UBAIDILLAH SHADIQ", 
+            "ALIA...", "FADIL RAHMAN", "FATHIR AL ICHSAN", "FITRAH", "GALANG AL ALAQ PRATAMA", 
+            "GILANG AL KHALIQ PRATAMA", "HIJRIANA ARFA", "MAYA FAIZAH RUSADY", "MUH FAQIH SAPUTRA", 
+            "MUH HABIB RIDHO", "MUH REZA ADITYA", "MUHAMMAD ANDRA RAFA PRATAM...", "MUHAMMAD AZKA A MAJID", 
+            "QAYLA ANISA PUTRI Z", "RAISA ATIQAH BALQIS", "SAKIA", "RAHMAT HIDAYAT FAIRUS MAHMUDDIN"
         ];
 
-        // Global State
-        let tournamentTree = []; // Stores rounds of matches
-        let currentMatchLocation = { roundIndex: 0, matchIndex: 0 };
+        let tournamentTree = [];
+        let currentRoundIndex = 0;
+        let currentMatchIndex = 0;
         let activeMatch = null;
+        let p1Score = 0;
+        let p2Score = 0;
+        let currentTurn = 1;
+        let p1CurrentQ = null;
+        let p2CurrentQ = null;
+        let ropePosition = 0;
+        const WINNING_SCORE = 3;
 
-        // Current Match Game Play State
-        let matchState = {
-            p1Score: 0,
-            p2Score: 0,
-            targetScore: 3, // Unggul 3 tarikan / poin
-            currentRopePosition: 0, // -3 (p1 wins) to +3 (p2 wins)
-            p1CurrentAns: 0,
-            p2CurrentAns: 0
-        };
-
-        // Initialize UI
-        document.getElementById('total-participants-count').innerText = RAW_STUDENTS.length;
-
-        // Sound Effects (Web Audio API Synthesizer - No External URL)
-        function playAudioSound(type) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type = 'sine', duration = 0.15) {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
                 osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                if (type === 'correct') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-                    osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15); // E5
-                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.3);
-                } else if (type === 'wrong') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
-                    osc.frequency.exponentialRampToValueAtTime(130.81, ctx.currentTime + 0.2); // C3
-                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.25);
-                } else if (type === 'win') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
-                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.3);
-                    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.6);
-                }
-            } catch (e) {
-                console.log('Audio error:', e);
-            }
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
         }
 
-        // Navigation Tabs
-        function switchTab(tabName) {
-            const bracketSec = document.getElementById('view-bracket');
-            const arenaSec = document.getElementById('view-arena');
-            const btnBracket = document.getElementById('nav-bracket-btn');
-            const btnArena = document.getElementById('nav-arena-btn');
-
-            if (tabName === 'bracket') {
-                bracketSec.classList.remove('hidden');
-                bracketSec.classList.add('flex');
-                arenaSec.classList.add('hidden');
-                arenaSec.classList.remove('flex');
-
-                btnBracket.className = "px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-brandBlue text-white shadow-md";
-                btnArena.className = "px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-slate-200 text-slate-700 hover:bg-slate-300";
-            } else {
-                arenaSec.classList.remove('hidden');
-                arenaSec.classList.add('flex');
-                bracketSec.classList.add('hidden');
-                bracketSec.classList.remove('flex');
-
-                btnArena.className = "px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-brandBlue text-white shadow-md";
-                btnBracket.className = "px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 bg-slate-200 text-slate-700 hover:bg-slate-300";
-            }
+        function playCorrectSound() {
+            playSound(523.25, 'triangle', 0.1);
+            setTimeout(() => playSound(659.25, 'triangle', 0.15), 100);
         }
 
-        // Generate Bracket (Single Elimination Knockout Tournament)
-        function shuffleAndGenerateBracket() {
-            // 1. Shuffle students array
+        function playWrongSound() {
+            playSound(200, 'sawtooth', 0.2);
+        }
+
+        // GENERATOR SOAL DENGAN 2 PILIHAN (A & B)
+        function generateMathQuestion() {
+            const types = ['+', '-', 'x', ':'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let num1, num2, answer;
+
+            switch(type) {
+                case '+':
+                    num1 = Math.floor(Math.random() * 80) + 12;
+                    num2 = Math.floor(Math.random() * 80) + 12;
+                    answer = num1 + num2;
+                    break;
+                case '-':
+                    num1 = Math.floor(Math.random() * 90) + 20;
+                    num2 = Math.floor(Math.random() * (num1 - 10)) + 5;
+                    answer = num1 - num2;
+                    break;
+                case 'x':
+                    num1 = Math.floor(Math.random() * 12) + 2;
+                    num2 = Math.floor(Math.random() * 12) + 2;
+                    answer = num1 * num2;
+                    break;
+                case ':':
+                    num2 = Math.floor(Math.random() * 9) + 2;
+                    answer = Math.floor(Math.random() * 10) + 2;
+                    num1 = num2 * answer;
+                    break;
+            }
+
+            // HANYA 1 PENGECCOH (TOTAL 2 OPSI: A & B)
+            let wrongOffset = (Math.floor(Math.random() * 4) + 1) * (Math.random() > 0.5 ? 1 : -1);
+            let wrongAnswer = answer + wrongOffset;
+            if (wrongAnswer < 0) wrongAnswer = answer + 2;
+
+            let options = [answer, wrongAnswer].sort(() => Math.random() - 0.5);
+
+            return {
+                question: `${num1} ${type === 'x' ? '×' : type === ':' ? '÷' : type} ${num2}`,
+                answer: answer,
+                options: options
+            };
+        }
+
+        function initTournament() {
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
-
-            // Determine power of 2 size needed (e.g., for 45 participants, next power of 2 is 64 or padded to 32)
-            // To make bracket clean, pad to nearest power of 2 with BYEs or auto-pass
-            let targetSize = 2;
-            while (targetSize < shuffled.length) {
-                targetSize *= 2;
-            }
-
-            // Create Round 1 Matches
+            const targetSize = 64;
             let round1Matches = [];
-            for (let i = 0; i < targetSize; i += 2) {
-                let p1 = shuffled[i] || "BYE (Lolos Otomatis)";
-                let p2 = shuffled[i + 1] || "BYE (Lolos Otomatis)";
+            let playerIdx = 0;
 
-                let match = {
-                    id: `R1-M${i/2}`,
-                    p1: p1,
-                    p2: p2,
-                    winner: null
-                };
-
-                // Handle BYEs automatically
-                if (p1 === "BYE (Lolos Otomatis)" && p2 !== "BYE (Lolos Otomatis)") {
-                    match.winner = p2;
-                } else if (p2 === "BYE (Lolos Otomatis)" && p1 !== "BYE (Lolos Otomatis)") {
+            for (let i = 0; i < targetSize / 2; i++) {
+                let p1 = shuffled[playerIdx++] || null;
+                let p2 = shuffled[playerIdx++] || null;
+                let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
+                if (!p2) {
                     match.winner = p1;
-                } else if (p1 === "BYE (Lolos Otomatis)" && p2 === "BYE (Lolos Otomatis)") {
-                    match.winner = "BYE";
+                    match.isBye = true;
                 }
-
                 round1Matches.push(match);
             }
 
-            // Initialize Tree Structure
             tournamentTree = [round1Matches];
-
-            // Build subsequent rounds (Round 2, Quarter, Semi, Final)
-            let currentRoundMatches = round1Matches;
+            let currentSize = targetSize / 2;
             let roundNum = 2;
-
-            while (currentRoundMatches.length > 1) {
-                let nextRoundMatches = [];
-                for (let i = 0; i < currentRoundMatches.length; i += 2) {
-                    let prevM1 = currentRoundMatches[i];
-                    let prevM2 = currentRoundMatches[i + 1];
-
-                    let p1 = prevM1.winner;
-                    let p2 = prevM2 ? prevM2.winner : null;
-
-                    let match = {
-                        id: `R${roundNum}-M${i/2}`,
-                        p1: p1,
-                        p2: p2,
-                        winner: null
-                    };
-
-                    // Auto advance if BYE was winner
-                    if (p1 === "BYE") match.p1 = null;
-                    if (p2 === "BYE") match.p2 = null;
-
-                    nextRoundMatches.push(match);
+            while (currentSize > 1) {
+                currentSize /= 2;
+                let round = [];
+                for (let i = 0; i < currentSize; i++) {
+                    round.push({ id: `R${roundNum}-M${i}`, p1: null, p2: null, winner: null, isBye: false });
                 }
-                tournamentTree.push(nextRoundMatches);
-                currentRoundMatches = nextRoundMatches;
+                tournamentTree.push(round);
                 roundNum++;
             }
 
+            advanceByes();
             renderBracket();
-            updateNextMatchButton();
         }
 
-        // Render Tournament Bracket HTML
+        function advanceByes() {
+            const r1 = tournamentTree[0];
+            const r2 = tournamentTree[1];
+            r1.forEach((m, idx) => {
+                if (m.isBye && m.winner) {
+                    const nextMatchIdx = Math.floor(idx / 2);
+                    if (idx % 2 === 0) r2[nextMatchIdx].p1 = m.winner;
+                    else r2[nextMatchIdx].p2 = m.winner;
+                }
+            });
+        }
+
+        function getRoundName(roundIdx, totalRounds) {
+            const remaining = totalRounds - roundIdx;
+            if (remaining === 1) return "BABAK FINAL 🏆";
+            if (remaining === 2) return "SEMI FINAL";
+            if (remaining === 3) return "PEREMPAT FINAL";
+            if (roundIdx === 0) return "BABAK PENYISIHAN";
+            return `BABAK ${roundIdx + 1}`;
+        }
+
         function renderBracket() {
-            const container = document.getElementById('bracket-container');
+            const container = document.getElementById('bracket-tree');
             container.innerHTML = '';
 
-            if (tournamentTree.length === 0) return;
-
-            const roundNames = ["Babak Penyisihan 1", "Babak Penyisihan 2", "Babak 16 Besar", "Perempat Final", "Semi Final", "FINAL"];
-
-            tournamentTree.forEach((round, rIndex) => {
+            tournamentTree.forEach((round, rIdx) => {
                 const roundCol = document.createElement('div');
-                roundCol.className = "flex flex-col justify-around gap-4 min-w-[240px]";
+                roundCol.className = 'flex flex-col justify-around py-4 space-y-4';
+                
+                const title = document.createElement('h4');
+                title.className = 'text-center font-bold text-xs uppercase tracking-wider text-amber-400 mb-2 bg-slate-800 p-2 rounded border border-slate-700';
+                title.innerText = getRoundName(rIdx, tournamentTree.length);
+                roundCol.appendChild(title);
 
-                // Title header for round
-                const totalRounds = tournamentTree.length;
-                let titleText = `Babak ${rIndex + 1}`;
-                if (rIndex === totalRounds - 1) titleText = "🏆 FINAL";
-                else if (rIndex === totalRounds - 2) titleText = "🔥 SEMI FINAL";
-                else if (rIndex === totalRounds - 3) titleText = "⚡ PEREMPAT FINAL";
+                const matchesDiv = document.createElement('div');
+                matchesDiv.className = 'flex flex-col justify-around flex-1 space-y-6';
 
-                const header = document.createElement('div');
-                header.className = "text-center py-2 px-3 bg-sky-100 rounded-xl font-bold text-xs text-sky-800 shadow-sm border border-sky-200 mb-2";
-                header.innerText = titleText;
-                roundCol.appendChild(header);
-
-                // Matches container
-                const matchesWrapper = document.createElement('div');
-                matchesWrapper.className = "flex flex-col justify-around flex-grow gap-4";
-
-                round.forEach((match, mIndex) => {
+                round.forEach((m, mIdx) => {
                     const matchCard = document.createElement('div');
-                    const isNextToPlay = isMatchReadyToPlay(rIndex, mIndex);
+                    const isReady = m.p1 && m.p2 && !m.winner;
+                    
+                    matchCard.className = `bracket-node p-3 border transition ${
+                        m.winner ? 'bg-slate-800/60 border-slate-700 opacity-80' : 
+                        isReady ? 'bg-indigo-950/80 border-indigo-500 shadow-lg ring-2 ring-indigo-400/30' : 'bg-slate-900 border-slate-800'
+                    }`;
 
-                    let borderStyle = "border-slate-200 bg-white";
-                    if (match.winner) borderStyle = "border-emerald-300 bg-emerald-50/50";
-                    else if (isNextToPlay) borderStyle = "border-amber-400 bg-amber-50 shadow-lg ring-2 ring-amber-300 animate-pulse";
-
-                    matchCard.className = `p-3 rounded-2xl border-2 ${borderStyle} shadow-sm transition flex flex-col gap-2 relative`;
-
-                    // P1 Row
-                    const p1Class = match.winner && match.winner === match.p1 ? "font-extrabold text-emerald-700" : "text-slate-700";
-                    const p2Class = match.winner && match.winner === match.p2 ? "font-extrabold text-emerald-700" : "text-slate-700";
+                    let statusBadge = '';
+                    if (m.winner) statusBadge = `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Selesai</span>`;
+                    else if (m.isBye) statusBadge = `<span class="text-[10px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded">BYE</span>`;
+                    else if (isReady) statusBadge = `<span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded animate-pulse">Siap</span>`;
 
                     matchCard.innerHTML = `
-                        <div class="flex items-center justify-between text-xs p-1.5 rounded-lg ${match.winner === match.p1 ? 'bg-emerald-100/70' : 'bg-slate-50'}">
-                            <span class="truncate max-w-[160px] ${p1Class}">${match.p1 || '???'}</span>
-                            ${match.winner === match.p1 ? '<i class="fa-solid fa-check text-emerald-600"></i>' : ''}
+                        <div class="flex justify-between items-center mb-1.5 border-b border-slate-700/50 pb-1">
+                            <span class="text-[10px] text-slate-400 font-mono">Match #${mIdx+1}</span>
+                            ${statusBadge}
                         </div>
-                        <div class="flex items-center justify-between text-xs p-1.5 rounded-lg ${match.winner === match.p2 ? 'bg-emerald-100/70' : 'bg-slate-50'}">
-                            <span class="truncate max-w-[160px] ${p2Class}">${match.p2 || '???'}</span>
-                            ${match.winner === match.p2 ? '<i class="fa-solid fa-check text-emerald-600"></i>' : ''}
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center px-2 py-1 rounded ${m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[130px]">${m.p1 || '<i class="text-slate-600">Menunggu</i>'}</span>
+                                ${m.winner === m.p1 ? '<i class="fa-solid fa-check text-xs text-emerald-400"></i>' : ''}
+                            </div>
+                            <div class="flex justify-between items-center px-2 py-1 rounded ${m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[130px]">${m.p2 || '<i class="text-slate-600">Menunggu</i>'}</span>
+                                ${m.winner === m.p2 ? '<i class="fa-solid fa-check text-xs text-emerald-400"></i>' : ''}
+                            </div>
                         </div>
+                        ${isReady ? `
+                            <div class="mt-2 flex gap-1">
+                                <button onclick="startMatch(${rIdx}, ${mIdx})" class="flex-1 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-play"></i> DUEL
+                                </button>
+                                <button onclick="openSkipModalFromBracket(${rIdx}, ${mIdx})" title="Skip / WO" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 border border-rose-700 font-bold text-xs rounded transition">
+                                    <i class="fa-solid fa-user-slash"></i>
+                                </button>
+                            </div>
+                        ` : ''}
                     `;
-
-                    if (isNextToPlay && !match.winner) {
-                        const playBtn = document.createElement('button');
-                        playBtn.className = "w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow transition mt-1 flex items-center justify-center gap-1";
-                        playBtn.innerHTML = `<i class="fa-solid fa-gamepad"></i> Tanding Sekarang`;
-                        playBtn.onclick = () => launchMatch(rIndex, mIndex);
-                        matchCard.appendChild(playBtn);
-                    }
-
-                    matchesWrapper.appendChild(matchCard);
+                    matchesDiv.appendChild(matchCard);
                 });
-
-                roundCol.appendChild(matchesWrapper);
+                roundCol.appendChild(matchesDiv);
                 container.appendChild(roundCol);
             });
         }
 
-        // Helper check if match is ready to play
-        function isMatchReadyToPlay(rIndex, mIndex) {
-            const match = tournamentTree[rIndex][mIndex];
-            return match && match.p1 && match.p2 && !match.winner && match.p1 !== "BYE (Lolos Otomatis)" && match.p2 !== "BYE (Lolos Otomatis)";
-        }
+        function startMatch(rIdx, mIdx) {
+            currentRoundIndex = rIdx;
+            currentMatchIndex = mIdx;
+            activeMatch = tournamentTree[rIdx][mIdx];
 
-        // Find next match to play
-        function getNextUnplayedMatch() {
-            for (let r = 0; r < tournamentTree.length; r++) {
-                for (let m = 0; m < tournamentTree[r].length; m++) {
-                    if (isMatchReadyToPlay(r, m)) {
-                        return { roundIndex: r, matchIndex: m };
-                    }
-                }
-            }
-            return null;
-        }
+            p1Score = 0;
+            p2Score = 0;
+            ropePosition = 0;
+            currentTurn = 1;
 
-        // Update Start Match Button in Bracket Banner
-        function updateNextMatchButton() {
-            const nextMatch = getNextUnplayedMatch();
-            const btn = document.getElementById('start-match-btn');
-            const label = document.getElementById('next-match-label');
-
-            if (nextMatch) {
-                btn.classList.remove('hidden');
-                btn.classList.add('flex');
-                const matchData = tournamentTree[nextMatch.roundIndex][nextMatch.matchIndex];
-                label.innerText = `Mainkan: ${matchData.p1} vs ${matchData.p2}`;
-            } else {
-                btn.classList.add('hidden');
-                btn.classList.remove('flex');
-                checkTournamentCompletion();
-            }
-        }
-
-        function startCurrentMatch() {
-            const nextMatch = getNextUnplayedMatch();
-            if (nextMatch) {
-                launchMatch(nextMatch.roundIndex, nextMatch.matchIndex);
-            }
-        }
-
-        // LAUNCH DUEL ARENA
-        function launchMatch(roundIndex, matchIndex) {
-            currentMatchLocation = { roundIndex, matchIndex };
-            activeMatch = tournamentTree[roundIndex][matchIndex];
-
-            // Reset Game state
-            matchState.p1Score = 0;
-            matchState.p2Score = 0;
-            matchState.currentRopePosition = 0;
-
-            // Update UI Player Info
             document.getElementById('p1-name').innerText = activeMatch.p1;
             document.getElementById('p2-name').innerText = activeMatch.p2;
+            document.getElementById('p1-turn-name').innerText = activeMatch.p1.split(' ')[0];
+            document.getElementById('p2-turn-name').innerText = activeMatch.p2.split(' ')[0];
             document.getElementById('p1-score').innerText = '0';
             document.getElementById('p2-score').innerText = '0';
-
-            // Round Badge
-            const totalRounds = tournamentTree.length;
-            let badgeText = `Babak ${roundIndex + 1}`;
-            if (roundIndex === totalRounds - 1) badgeText = "🏆 BABAK FINAL";
-            else if (roundIndex === totalRounds - 2) badgeText = "🔥 SEMI FINAL";
-            document.getElementById('match-round-badge').innerText = badgeText;
+            document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
 
             updateRopeVisual();
-            generateNewQuestionForP1();
-            generateNewQuestionForP2();
+            document.getElementById('bracket-view').classList.add('hidden');
+            document.getElementById('arena-view').classList.remove('hidden');
 
-            switchTab('arena');
+            loadNextTurn();
         }
 
-        // GENERATE MATH QUESTIONS (SD KELAS 4)
-        function generateMathQuestion() {
-            // Types: 0: Penjumlahan, 1: Pengurangan, 2: Perkalian, 3: Pembagian
-            const type = Math.floor(Math.random() * 4);
-            let num1, num2, answer, questionStr, typeLabel;
+        function loadNextTurn() {
+            p1CurrentQ = generateMathQuestion();
+            p2CurrentQ = generateMathQuestion();
 
-            switch (type) {
-                case 0: // Penjumlahan (2-3 Digit)
-                    num1 = Math.floor(Math.random() * 150) + 20;
-                    num2 = Math.floor(Math.random() * 150) + 15;
-                    answer = num1 + num2;
-                    questionStr = `${num1} + ${num2}`;
-                    typeLabel = "Penjumlahan";
-                    break;
-                case 1: // Pengurangan (2-3 Digit)
-                    num1 = Math.floor(Math.random() * 200) + 50;
-                    num2 = Math.floor(Math.random() * (num1 - 10)) + 10;
-                    answer = num1 - num2;
-                    questionStr = `${num1} − ${num2}`;
-                    typeLabel = "Pengurangan";
-                    break;
-                case 2: // Perkalian (SD 4: 1x1 s/d 12x12 atau puluhan x satuan)
-                    if (Math.random() > 0.4) {
-                        num1 = Math.floor(Math.random() * 12) + 2;
-                        num2 = Math.floor(Math.random() * 12) + 2;
-                    } else {
-                        num1 = Math.floor(Math.random() * 25) + 5;
-                        num2 = Math.floor(Math.random() * 9) + 2;
-                    }
-                    answer = num1 * num2;
-                    questionStr = `${num1} × ${num2}`;
-                    typeLabel = "Perkalian";
-                    break;
-                case 3: // Pembagian Pas (Tanpa Sisa)
-                    num2 = Math.floor(Math.random() * 10) + 2;
-                    answer = Math.floor(Math.random() * 12) + 2;
-                    num1 = num2 * answer;
-                    questionStr = `${num1} ÷ ${num2}`;
-                    typeLabel = "Pembagian";
-                    break;
+            renderQuestionCard(1, p1CurrentQ);
+            renderQuestionCard(2, p2CurrentQ);
+
+            if (currentTurn === 1) {
+                document.getElementById('p1-card').classList.remove('opacity-50', 'pointer-events-none');
+                document.getElementById('p2-card').classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('p1-timer').innerText = 'Giliran Anda!';
+                document.getElementById('p2-timer').innerText = 'Menunggu...';
+            } else {
+                document.getElementById('p2-card').classList.remove('opacity-50', 'pointer-events-none');
+                document.getElementById('p1-card').classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('p2-timer').innerText = 'Giliran Anda!';
+                document.getElementById('p1-timer').innerText = 'Menunggu...';
             }
-
-            // Generate 3 Multiple Choice Options (Distractors)
-            let options = [answer];
-            while (options.length < 4) {
-                let offset = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
-                let fakeAns = answer + offset;
-                if (fakeAns > 0 && !options.includes(fakeAns)) {
-                    options.push(fakeAns);
-                }
-            }
-            options.sort(() => Math.random() - 0.5);
-
-            return { questionStr, answer, options, typeLabel };
         }
 
-        // Render Questions for P1
-        function generateNewQuestionForP1() {
-            const q = generateMathQuestion();
-            matchState.p1CurrentAns = q.answer;
+        // RENDER PILIHAN HANYA A DAN B
+        function renderQuestionCard(playerNum, qData) {
+            document.getElementById(`p${playerNum}-math-question`).innerText = qData.question;
+            const optsContainer = document.getElementById(`p${playerNum}-options`);
+            optsContainer.innerHTML = '';
 
-            document.getElementById('p1-question').innerText = `${q.questionStr} = ?`;
-            document.getElementById('p1-op-label').innerText = `Soal ${q.typeLabel}`;
-
-            const container = document.getElementById('p1-options');
-            container.innerHTML = '';
-
-            q.options.forEach(opt => {
+            const labels = ['A', 'B'];
+            qData.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
-                btn.className = "py-3 px-4 bg-indigo-50 hover:bg-indigo-600 hover:text-white font-bold text-indigo-800 rounded-2xl border-2 border-indigo-200 text-lg md:text-xl transition shadow-sm active:scale-95";
-                btn.innerText = opt;
-                btn.onclick = () => handleP1Answer(opt, btn);
-                container.appendChild(btn);
+                btn.className = `py-3 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-extrabold text-xl transition border border-slate-600 active:scale-95 flex items-center justify-center gap-2`;
+                btn.innerHTML = `<span class="px-2 py-0.5 bg-slate-900 rounded text-amber-400 text-sm">${labels[index]}</span> ${opt}`;
+                btn.onclick = () => handleAnswer(playerNum, opt === qData.answer);
+                optsContainer.appendChild(btn);
             });
         }
 
-        // Render Questions for P2
-        function generateNewQuestionForP2() {
-            const q = generateMathQuestion();
-            matchState.p2CurrentAns = q.answer;
-
-            document.getElementById('p2-question').innerText = `${q.questionStr} = ?`;
-            document.getElementById('p2-op-label').innerText = `Soal ${q.typeLabel}`;
-
-            const container = document.getElementById('p2-options');
-            container.innerHTML = '';
-
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "py-3 px-4 bg-rose-50 hover:bg-rose-600 hover:text-white font-bold text-rose-800 rounded-2xl border-2 border-rose-200 text-lg md:text-xl transition shadow-sm active:scale-95";
-                btn.innerText = opt;
-                btn.onclick = () => handleP2Answer(opt, btn);
-                container.appendChild(btn);
-            });
-        }
-
-        // Answer Event Handlers
-        function handleP1Answer(selectedOpt, btnElement) {
-            if (selectedOpt === matchState.p1CurrentAns) {
-                // Correct Answer!
-                playAudioSound('correct');
-                matchState.p1Score += 1;
-                matchState.currentRopePosition -= 1; // Pull left
-                document.getElementById('p1-score').innerText = matchState.p1Score;
-
-                // Animate Rope Stage
-                const stage = document.getElementById('rope-stage');
-                stage.classList.add('pull-left-anim');
-                setTimeout(() => stage.classList.remove('pull-left-anim'), 300);
-
-                updateRopeVisual();
-                checkMatchStatus();
-                generateNewQuestionForP1();
+        function handleAnswer(playerNum, isCorrect) {
+            if (isCorrect) {
+                playCorrectSound();
+                if (playerNum === 1) { p1Score++; ropePosition -= 1.5; }
+                else { p2Score++; ropePosition += 1.5; }
             } else {
-                // Wrong Answer Penalty
-                playAudioSound('wrong');
-                btnElement.classList.add('shake', 'bg-rose-200', 'text-rose-800', 'border-rose-400');
-                setTimeout(() => {
-                    btnElement.classList.remove('shake');
-                    generateNewQuestionForP1();
-                }, 400);
+                playWrongSound();
+                if (playerNum === 1) ropePosition += 0.8;
+                else ropePosition -= 0.8;
             }
-        }
 
-        function handleP2Answer(selectedOpt, btnElement) {
-            if (selectedOpt === matchState.p2CurrentAns) {
-                // Correct Answer!
-                playAudioSound('correct');
-                matchState.p2Score += 1;
-                matchState.currentRopePosition += 1; // Pull right
-                document.getElementById('p2-score').innerText = matchState.p2Score;
+            document.getElementById('p1-score').innerText = p1Score;
+            document.getElementById('p2-score').innerText = p2Score;
+            updateRopeVisual();
 
-                // Animate Rope Stage
-                const stage = document.getElementById('rope-stage');
-                stage.classList.add('pull-right-anim');
-                setTimeout(() => stage.classList.remove('pull-right-anim'), 300);
-
-                updateRopeVisual();
-                checkMatchStatus();
-                generateNewQuestionForP2();
-            } else {
-                // Wrong Answer Penalty
-                playAudioSound('wrong');
-                btnElement.classList.add('shake', 'bg-rose-200', 'text-rose-800', 'border-rose-400');
-                setTimeout(() => {
-                    btnElement.classList.remove('shake');
-                    generateNewQuestionForP2();
-                }, 400);
-            }
-        }
-
-        // Update Visual Rope Position
-        function updateRopeVisual() {
-            // max position limit -3 to +3
-            const pos = matchState.currentRopePosition;
-            const percentageLeft = 50 - (pos * 15);
-            const percentageRight = 50 + (pos * 15);
-
-            document.getElementById('tug-bar-left').style.width = `${percentageLeft}%`;
-            document.getElementById('tug-bar-right').style.width = `${percentageRight}%`;
-
-            const ropeStage = document.getElementById('rope-stage');
-            const shiftX = pos * 35; // Pixels to shift rope
-            ropeStage.style.transform = `translateX(${-shiftX}px)`;
-        }
-
-        // Check if someone won the match
-        function checkMatchStatus() {
-            const pos = matchState.currentRopePosition;
-
-            if (pos <= -matchState.targetScore || matchState.p1Score >= 5) {
-                // P1 Wins!
+            if (p1Score >= WINNING_SCORE || ropePosition <= -4) {
                 finishMatch(activeMatch.p1);
-            } else if (pos >= matchState.targetScore || matchState.p2Score >= 5) {
-                // P2 Wins!
+                return;
+            } else if (p2Score >= WINNING_SCORE || ropePosition >= 4) {
                 finishMatch(activeMatch.p2);
+                return;
             }
+
+            currentTurn = currentTurn === 1 ? 2 : 1;
+            loadNextTurn();
         }
 
-        // Match Completion
+        function updateRopeVisual() {
+            ropePosition = Math.max(-5, Math.min(5, ropePosition));
+            const leftPercent = 50 + (ropePosition * 7);
+            document.getElementById('rope-flag').style.left = `${leftPercent}%`;
+            document.getElementById('player1-mascot').style.left = `${Math.max(5, leftPercent - 35)}%`;
+            document.getElementById('player2-mascot').style.right = `${Math.max(5, (100 - leftPercent) - 35)}%`;
+        }
+
         function finishMatch(winnerName) {
-            playAudioSound('win');
-
-            // Trigger Confetti
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-
-            // Record Winner in Bracket Tree
             activeMatch.winner = winnerName;
+            const nextRoundIdx = currentRoundIndex + 1;
+            if (nextRoundIdx < tournamentTree.length) {
+                const nextMatchIdx = Math.floor(currentMatchIndex / 2);
+                const nextMatch = tournamentTree[nextRoundIdx][nextMatchIdx];
+                if (currentMatchIndex % 2 === 0) nextMatch.p1 = winnerName;
+                else nextMatch.p2 = winnerName;
+            }
 
-            // Advance winner to next round if available
-            advanceWinnerInTree(currentMatchLocation.roundIndex, currentMatchLocation.matchIndex, winnerName);
+            const isFinal = currentRoundIndex === tournamentTree.length - 1;
+            document.getElementById('winner-title').innerText = isFinal ? "🏆 JUARA TURNAMEN TARIK TAMBANG 🏆" : "PEMENANG DUEL";
+            document.getElementById('winner-name').innerText = winnerName;
+            document.getElementById('winner-desc').innerText = isFinal ? "Selamat! Menjadi Juara 1 Matematika Kelas 4 SD!" : "Berhasil menarik tali dan lolos ke Babak Berikutnya!";
 
-            // Display Winner Modal
-            document.getElementById('winner-name-display').innerText = winnerName;
             document.getElementById('winner-modal').classList.remove('hidden');
+            confetti({ particleCount: isFinal ? 200 : 80, spread: isFinal ? 100 : 60, origin: { y: 0.6 } });
         }
 
-        // Advance Winner to next match slot
-        function advanceWinnerInTree(rIndex, mIndex, winnerName) {
-            const nextRoundIndex = rIndex + 1;
-            if (nextRoundIndex < tournamentTree.length) {
-                const nextMatchIndex = Math.floor(mIndex / 2);
-                const isP1 = mIndex % 2 === 0;
-
-                if (isP1) {
-                    tournamentTree[nextRoundIndex][nextMatchIndex].p1 = winnerName;
-                } else {
-                    tournamentTree[nextRoundIndex][nextMatchIndex].p2 = winnerName;
-                }
-            }
-        }
-
-        function closeWinnerModalAndReturn() {
+        function closeWinnerModal() {
             document.getElementById('winner-modal').classList.add('hidden');
+            showBracketView();
+        }
+
+        function showBracketView() {
+            document.getElementById('arena-view').classList.add('hidden');
+            document.getElementById('bracket-view').classList.remove('hidden');
             renderBracket();
-            updateNextMatchButton();
-            switchTab('bracket');
         }
 
-        // Check overall tournament completion (Champion Final)
-        function checkTournamentCompletion() {
-            const finalRound = tournamentTree[tournamentTree.length - 1];
-            if (finalRound && finalRound[0] && finalRound[0].winner) {
-                const champion = finalRound[0].winner;
-                const runnerUp = finalRound[0].winner === finalRound[0].p1 ? finalRound[0].p2 : finalRound[0].p1;
+        function openSkipModalFromBracket(rIdx, mIdx) {
+            currentRoundIndex = rIdx;
+            currentMatchIndex = mIdx;
+            activeMatch = tournamentTree[rIdx][mIdx];
+            showSkipModal();
+        }
 
-                // Show Grand Winner Modal
-                document.getElementById('champion-name').innerText = champion;
-                document.getElementById('champion-name-mini').innerText = champion;
-                document.getElementById('runnerup-name').innerText = runnerUp || "Runner Up";
+        function skipCurrentMatchPrompt() {
+            showSkipModal();
+        }
 
-                // Get Semi-finalists
-                let sfNames = "Peserta Terbaik";
-                if (tournamentTree.length >= 2) {
-                    const sfRound = tournamentTree[tournamentTree.length - 2];
-                    const semiFinalists = sfRound.map(m => [m.p1, m.p2]).flat().filter(n => n && n !== champion && n !== runnerUp);
-                    if (semiFinalists.length > 0) sfNames = semiFinalists.slice(0, 2).join(", ");
-                }
-                document.getElementById('sf-names').innerText = sfNames;
+        function showSkipModal() {
+            const container = document.getElementById('skip-modal-options');
+            container.innerHTML = `
+                <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-3 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-white transition flex items-center justify-between px-4">
+                    <span>${activeMatch.p1} Lolos (WO)</span>
+                    <span class="text-xs bg-blue-900 px-2 py-1 rounded text-blue-200">${activeMatch.p2} Tidak Hadir</span>
+                </button>
+                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-3 bg-red-600 hover:bg-red-500 font-bold rounded-xl text-white transition flex items-center justify-between px-4">
+                    <span>${activeMatch.p2} Lolos (WO)</span>
+                    <span class="text-xs bg-red-900 px-2 py-1 rounded text-red-200">${activeMatch.p1} Tidak Hadir</span>
+                </button>
+            `;
+            document.getElementById('skip-modal').classList.remove('hidden');
+        }
 
-                document.getElementById('champion-modal').classList.remove('hidden');
+        function closeSkipModal() {
+            document.getElementById('skip-modal').classList.add('hidden');
+        }
 
-                confetti({
-                    particleCount: 250,
-                    spread: 100,
-                    origin: { y: 0.4 }
-                });
+        function executeSkipWinner(winnerName) {
+            closeSkipModal();
+            finishMatch(winnerName);
+        }
+
+        function resetTournament() {
+            if (confirm("Apakah Anda yakin ingin mengacak ulang seluruh bagan turnamen?")) {
+                initTournament();
             }
         }
 
-        function closeChampionModal() {
-            document.getElementById('champion-modal').classList.add('hidden');
-        }
-
-        // Reset Everything
-        function resetWholeTournament() {
-            if (confirm("Apakah Anda yakin ingin mereset seluruh bagan turnamen?")) {
-                tournamentTree = [];
-                renderBracket();
-                updateNextMatchButton();
-                switchTab('bracket');
-            }
-        }
-
-        // Auto Initialize Bracket on Load
-        window.onload = function() {
-            shuffleAndGenerateBracket();
-        };
+        window.onload = () => { initTournament(); };
     </script>
 </body>
 </html>
