@@ -12,9 +12,9 @@
         body { font-family: 'Fredoka', sans-serif; background-color: #0f172a; color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .rope-container { position: relative; height: 130px; width: 100%; overflow: hidden; }
         .rope { position: absolute; top: 50%; height: 14px; background: #d97706; transform: translateY(-50%); width: 200%; left: -50%; border-radius: 7px; border: 2px solid #78350f; }
-        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 32px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.1s linear; }
-        .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.1s linear; }
-        .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.1s linear; }
+        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 32px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.15s ease-out; }
+        .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.15s ease-out; }
+        .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.15s ease-out; }
         .bracket-node { min-width: 210px; border-radius: 8px; font-size: 0.8rem; }
         .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 5px; }
@@ -117,7 +117,7 @@
             <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 relative shrink-0">
                 <div class="flex justify-between mb-1 text-[11px] font-semibold text-slate-400">
                     <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> GARIS BELAKANG (-5) | TENGAH (0)</span>
-                    <span class="text-amber-400">TARIK / DORONG REAL-TIME</span>
+                    <span class="text-amber-400">AKURAT PER 1 LANGKAH</span>
                     <span class="text-red-400">TENGAH (0) | GARIS BELAKANG (+5) <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
@@ -137,7 +137,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-blue-400 uppercase" id="p1-panel-name">P1</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tali mundur | Salah: Tali maju</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tali mundur (-1) | Salah: Tali maju (+1)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p1-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -151,7 +151,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-red-400 uppercase" id="p2-panel-name">P2</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tali maju | Salah: Tali mundur</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tali maju (+1) | Salah: Tali mundur (-1)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p2-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -231,7 +231,7 @@
 
         let p1Score = 0;
         let p2Score = 0;
-        let ropePosition = 0; 
+        let ropePosition = 0; // Skala -5 s/d 5 (Akurat per 1 langkah)
         let p1Questions = [];
         let p2Questions = [];
         let p1Idx = 0;
@@ -541,23 +541,28 @@
             const qData = qList[idx];
             
             const isCorrect = (chosenKey === qData.key);
-            const step = 1.0; 
+            
+            // ATURAN AKURAT PER 1 LANGKAH:
+            // Total dari tengah (0) ke garis belakang adalah 5 langkah.
+            // Setiap jawaban benar menggeser tali tepat 1 langkah ke arahnya.
+            // Setiap jawaban salah menggeser tali tepat 1 langkah ke arah lawan.
+            const step = 1; 
 
             if (isCorrect) {
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition -= step; 
+                    ropePosition -= step; // Benar P1: Tali mundur 1 langkah ke kiri
                 } else {
                     p2Score++;
-                    ropePosition += step; 
+                    ropePosition += step; // Benar P2: Tali maju 1 langkah ke kanan
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
                 if (playerNum === 1) {
-                    ropePosition += step; 
+                    ropePosition += step; // Salah P1: Tali maju 1 langkah ke kanan
                 } else {
-                    ropePosition -= step; 
+                    ropePosition -= step; // Salah P2: Tali mundur 1 langkah ke kiri
                 }
             }
 
@@ -577,7 +582,10 @@
         }
 
         function updateRopeVisual() {
+            // Batas maksimal -5 (garis belakang P1) sampai +5 (garis belakang P2)
             ropePosition = Math.max(-5, Math.min(5, ropePosition));
+            
+            // Konversi posisi (-5 s/d 5) ke persentase visual layar (10% per langkah)
             const leftPercent = 50 + (ropePosition * 10);
             
             document.getElementById('rope-flag').style.left = `${leftPercent}%`;
@@ -587,10 +595,10 @@
 
         function checkMatchProgress() {
             if (ropePosition <= -5) {
-                finishMatch(activeMatch.p2, "Menang Wilayah / Posisi Tali");
+                finishMatch(activeMatch.p2, "Menang Wilayah / Lewati Garis Belakang");
                 return;
             } else if (ropePosition >= 5) {
-                finishMatch(activeMatch.p1, "Menang Wilayah / Posisi Tali");
+                finishMatch(activeMatch.p1, "Menang Wilayah / Lewati Garis Belakang");
                 return;
             }
 
