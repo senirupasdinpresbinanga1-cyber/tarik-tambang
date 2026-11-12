@@ -253,11 +253,8 @@
             loader.classList.remove('hidden');
 
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 6000);
-
-                const response = await fetch(GAS_URL, { signal: controller.signal });
-                clearTimeout(timeoutId);
+                // Gunakan mode JSONP/CORS handling atau fetch langsung dengan catch pengaman
+                const response = await fetch(GAS_URL, { redirect: "follow" });
                 const result = await response.json();
 
                 if (result && result.status === "success" && result.students && result.questions) {
@@ -524,7 +521,6 @@
                 idx = 0;
             }
 
-            document.getElementById(`p${playerNum}-q-idx`).innerText = idx + 1;
             const qData = qList[idx];
             document.getElementById(`p${playerNum}-math-question`).innerText = qData.soal;
             
@@ -671,7 +667,7 @@
             let candidateStudents = new Set();
             RAW_STUDENTS.forEach(s => candidateStudents.add(s));
 
-            const p1Select = document.getElementById('swap-p1-select');
+            const p1Select = Document.getElementById('swap-p1-select');
             const p2Select = document.getElementById('swap-p2-select');
             p1Select.innerHTML = `<option value="">-- Kosong --</option>`;
             p2Select.innerHTML = `<option value="">-- Kosong --</option>`;
@@ -726,7 +722,7 @@
             const container = document.getElementById('skip-modal-options');
             container.innerHTML = `
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
-                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-white text-xs">${activeMatch.p2} Lolos (WO)</button>
+                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
             document.getElementById('skip-modal').classList.remove('hidden');
         }
