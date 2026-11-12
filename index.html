@@ -16,19 +16,22 @@
         .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.1s linear; }
         .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.1s linear; }
         .bracket-node { min-width: 210px; border-radius: 8px; font-size: 0.8rem; }
-        
         .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
 <body class="select-none">
 
+    <!-- AUDIO BACKSOUND GITHUB -->
+    <audio id="bgm" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/username/repository/main/backsound.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50">
         <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-400 mb-3"></i>
-        <p class="text-sm font-bold text-slate-200">Mengambil Data Siswa dari Spreadsheet...</p>
+        <p class="text-sm font-bold text-slate-200">Memuat Data Database & Soal...</p>
         <p class="text-xs text-slate-400 mt-1">Mohon tunggu sebentar</p>
     </div>
 
@@ -38,15 +41,15 @@
             <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
             <div>
                 <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA (REAL-TIME)</h1>
-                <p class="text-[11px] text-slate-400">Kelas 4 SD - Terhubung Database Spreadsheet</p>
+                <p class="text-[11px] text-slate-400">Database Sheet Siswa & Soal A-D (50 Soal Random)</p>
             </div>
         </div>
         <div class="flex space-x-2">
-            <button onclick="syncDatabase()" title="Muat Ulang Data dari Spreadsheet" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+            <button onclick="syncDatabase()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-cloud-arrow-down"></i> Sync Data
             </button>
             <button onclick="toggleFullScreen()" id="fs-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-                <i class="fa-solid fa-expand" id="fs-icon"></i> Full Screen
+                <i class="fa-solid fa-expand"></i> Full Screen
             </button>
             <button onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-sitemap"></i> Bagan
@@ -64,15 +67,13 @@
         <div id="bracket-view" class="h-full flex flex-col">
             <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
                 <div id="tournament-status" class="text-xs font-semibold text-amber-400">
-                    <i class="fa-solid fa-database mr-1"></i> Data Peserta Otomatis dari Google Sheets
+                    <i class="fa-solid fa-database mr-1"></i> Terhubung ke Google Sheets
                 </div>
-                <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count" class="font-bold text-white">0</span> Siswa</div>
+                <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count" class="font-bold text-white">0</span> Siswa | Bank Soal: <span id="total-questions-count" class="font-bold text-white">0</span> Soal</div>
             </div>
 
             <div class="flex-1 overflow-auto custom-scrollbar bg-slate-900/50 rounded-xl border border-slate-800 p-4">
-                <div id="bracket-tree" class="flex space-x-12 min-w-max items-center justify-start w-full">
-                    <!-- Dynamic Bracket Rendered Here -->
-                </div>
+                <div id="bracket-tree" class="flex space-x-12 min-w-max items-center justify-start w-full"></div>
             </div>
         </div>
 
@@ -85,13 +86,13 @@
                     <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-base border-2 border-blue-400">P1</div>
                     <div>
                         <h3 id="p1-name" class="font-bold text-sm text-blue-400 truncate max-w-[150px]">Pemain 1</h3>
-                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Poin Tarik: <span id="p1-score">0</span></span>
+                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Soal ke-<span id="p1-q-idx">1</span>/50 | Benar: <span id="p1-score">0</span></span>
                     </div>
                 </div>
 
                 <div class="text-center">
                     <span id="current-match-round" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">Babak Penyisihan</span>
-                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">ADU CEPAT BERSAMAAN</h2>
+                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">WAKTU: <span id="match-timer" class="text-amber-400 font-mono">20</span>s</h2>
                     <div class="flex items-center justify-center gap-3 mt-0.5">
                         <button onclick="openSwapModal(currentRoundIndex, currentMatchIndex, true)" class="text-[11px] text-sky-400 hover:text-sky-300 underline font-medium">
                             <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Ganti Lawan
@@ -107,7 +108,7 @@
                     <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-base border-2 border-red-400">P2</div>
                     <div>
                         <h3 id="p2-name" class="font-bold text-sm text-red-400 truncate max-w-[150px]">Pemain 2</h3>
-                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Poin Tarik: <span id="p2-score">0</span></span>
+                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Soal ke-<span id="p2-q-idx">1</span>/50 | Benar: <span id="p2-score">0</span></span>
                     </div>
                 </div>
             </div>
@@ -115,9 +116,9 @@
             <!-- VISUAL ARENA TARIK TAMBANG -->
             <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 relative shrink-0">
                 <div class="flex justify-between mb-1 text-[11px] font-semibold text-slate-400">
-                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> ZONA P1</span>
-                    <span class="text-amber-400">TARIK SE-CEPATNYA!</span>
-                    <span class="text-red-400">ZONA P2 <i class="fa-solid fa-arrow-right"></i></span>
+                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> GARIS BELAKANG (-5) | TENGAH (0)</span>
+                    <span class="text-amber-400">TARIK / DORONG REAL-TIME</span>
+                    <span class="text-red-400">TENGAH (0) | GARIS BELAKANG (+5) <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
                 <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
@@ -129,31 +130,31 @@
                 </div>
             </div>
 
-            <!-- AREA SOAL REAL-TIME (KIRI & KANAN BERJALAN BERSAMAAN) -->
+            <!-- AREA SOAL Pilihan Ganda A, B, C, D -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden pb-1">
-                <!-- P1 REAL-TIME PANEL -->
+                <!-- P1 PANEL -->
                 <div class="bg-slate-800/90 p-3 rounded-xl border-2 border-blue-500 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-blue-400 uppercase" id="p1-panel-name">P1</span>
-                            <span class="text-[10px] text-slate-400">Jawab benar untuk tarik tali!</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tali mundur | Salah: Tali maju</span>
                         </div>
-                        <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2">
-                            <span id="p1-math-question" class="text-xl font-extrabold text-amber-300 font-mono">? + ?</span>
+                        <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
+                            <span id="p1-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
                         </div>
                     </div>
                     <div id="p1-options" class="grid grid-cols-2 gap-2"></div>
                 </div>
 
-                <!-- P2 REAL-TIME PANEL -->
+                <!-- P2 PANEL -->
                 <div class="bg-slate-800/90 p-3 rounded-xl border-2 border-red-500 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-red-400 uppercase" id="p2-panel-name">P2</span>
-                            <span class="text-[10px] text-slate-400">Jawab benar untuk tarik tali!</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tali maju | Salah: Tali mundur</span>
                         </div>
-                        <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2">
-                            <span id="p2-math-question" class="text-xl font-extrabold text-amber-300 font-mono">? + ?</span>
+                        <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
+                            <span id="p2-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
                         </div>
                     </div>
                     <div id="p2-options" class="grid grid-cols-2 gap-2"></div>
@@ -164,7 +165,7 @@
 
     </main>
 
-    <!-- MODAL GANTI / TUKAR LAWAN MANUAL -->
+    <!-- MODAL MODIFIKASI -->
     <div id="swap-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
             <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-700">
@@ -173,55 +174,45 @@
                 </div>
                 <div>
                     <h3 class="text-base font-bold text-slate-100">Atur / Tukar Lawan Manual</h3>
-                    <p id="swap-match-subtitle" class="text-[11px] text-slate-400">Babak Penyisihan</p>
                 </div>
             </div>
-
             <div class="space-y-3 mb-4">
                 <div>
-                    <label class="block text-xs font-bold text-blue-400 mb-1">Pemain 1 (Zona Biru):</label>
-                    <select id="swap-p1-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"></select>
+                    <label class="block text-xs font-bold text-blue-400 mb-1">Pemain 1:</label>
+                    <select id="swap-p1-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"></select>
                 </div>
                 <div class="flex justify-center">
-                    <button onclick="flipSwapSelects()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-full text-[11px] text-slate-300 transition flex items-center gap-1">
-                        <i class="fa-solid fa-retweet"></i> Tukar Posisi
-                    </button>
+                    <button onclick="flipSwapSelects()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-full text-[11px] text-slate-300">Tukar Posisi</button>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-red-400 mb-1">Pemain 2 (Zona Merah):</label>
-                    <select id="swap-p2-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"></select>
+                    <label class="block text-xs font-bold text-red-400 mb-1">Pemain 2:</label>
+                    <select id="swap-p2-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"></select>
                 </div>
             </div>
-
             <div class="flex gap-2">
-                <button onclick="closeSwapModal()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold transition">Batal</button>
-                <button onclick="applyManualSwap()" class="flex-1 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition shadow-lg">Simpan</button>
+                <button onclick="closeSwapModal()" class="flex-1 py-2 bg-slate-700 rounded-xl text-xs font-semibold">Batal</button>
+                <button onclick="applyManualSwap()" class="flex-1 py-2 bg-sky-600 rounded-xl text-xs font-bold">Simpan</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL SKIP / WO -->
     <div id="skip-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
-            <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                <i class="fa-solid fa-user-slash"></i>
-            </div>
-            <h3 class="text-lg font-bold mb-1 text-slate-100">Siswa Tidak Hadir (WO)</h3>
-            <div class="space-y-2 mb-4 mt-3" id="skip-modal-options"></div>
-            <button onclick="closeSkipModal()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold transition">Batal</button>
+            <h3 class="text-lg font-bold mb-3 text-slate-100">Siswa Tidak Hadir (WO)</h3>
+            <div class="space-y-2 mb-4" id="skip-modal-options"></div>
+            <button onclick="closeSkipModal()" class="w-full py-2 bg-slate-700 rounded-xl text-xs font-semibold">Batal</button>
         </div>
     </div>
 
-    <!-- MODAL PEMENANG -->
     <div id="winner-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl relative overflow-hidden">
+        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
             <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl border-2 border-amber-500">
                 <i class="fa-solid fa-crown"></i>
             </div>
-            <h2 id="winner-title" class="text-[11px] font-extrabold uppercase text-amber-400 tracking-widest mb-1">PEMENANG MATCH</h2>
+            <h2 id="winner-title" class="text-[11px] font-extrabold uppercase text-amber-400 mb-1">PEMENANG MATCH</h2>
             <h1 id="winner-name" class="text-2xl font-black text-white mb-1">NAMA SISWA</h1>
             <p id="winner-desc" class="text-xs text-slate-300 mb-5">Lolos ke babak berikutnya!</p>
-            <button onclick="closeWinnerModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-extrabold rounded-xl text-sm shadow-lg transition">
+            <button onclick="closeWinnerModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold rounded-xl text-sm shadow-lg">
                 Lanjutkan Turnamen <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
         </div>
@@ -229,78 +220,85 @@
 
 <script>
         // =========================================================================
-        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI:
+        // MASUKKAN URL WEB APP APPS SCRIPT DAN LINK RAW AUDIO GITHUB DI BAWAH INI:
         // =========================================================================
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbypg2yTXkgLveQ5uC1ZrwHfQP5KS1628DzRxSD2T7ZsLVRlyo4iM46rBpIhuZeb5Aj_5A/exec";
+        const GAS_URL = "https://script.google.com/macros/s/PASTE_URL_WEB_APP_ANDA_DI_SINI/exec";
+        const BACKSOUND_URL = "https://raw.githubusercontent.com/username/repository/main/backsound.mp3";
 
-        let RAW_STUDENTS = []; // Diisi otomatis dari Google Spreadsheet
+        let RAW_STUDENTS = [];
+        let BANK_QUESTIONS = [];
         let tournamentTree = [];
         let currentRoundIndex = 0;
         let currentMatchIndex = 0;
         let activeMatch = null;
+
         let p1Score = 0;
         let p2Score = 0;
-        let ropePosition = 0;
-        let p1CurrentQ = null;
-        let p2CurrentQ = null;
-        const WINNING_SCORE = 5;
+        let ropePosition = 0; // 0 di tengah, -5 garis belakang P1, +5 garis belakang P2
+        let p1Questions = [];
+        let p2Questions = [];
+        let p1Idx = 0;
+        let p2Idx = 0;
+        let questionTimer = null;
+        let timeLeft = 20;
 
         let swapTargetRIdx = 0;
         let swapTargetMIdx = 0;
         let swapFromArena = false;
 
-        // Ambil daftar siswa dari Google Spreadsheet
-        async function fetchStudentsFromDatabase() {
+        // Inisialisasi Audio Backsound
+        const bgm = document.getElementById('bgm');
+        if (BACKSOUND_URL && !BACKSOUND_URL.includes("username")) {
+            bgm.src = BACKSOUND_URL;
+        }
+
+        async function fetchDatabase() {
             const loader = document.getElementById('loading-overlay');
             loader.classList.remove('hidden');
 
             try {
                 if (GAS_URL.includes("PASTE_URL_WEB_APP")) {
-                    throw new Error("URL Apps Script belum dipasang di kode index.html!");
+                    throw new Error("URL Web App Apps Script belum dipasang!");
                 }
 
                 const response = await fetch(GAS_URL);
                 const result = await response.json();
 
-                if (result.status === "success" && Array.isArray(result.students) && result.students.length > 0) {
-                    RAW_STUDENTS = result.students;
+                if (result.status === "success") {
+                    RAW_STUDENTS = result.students || [];
+                    BANK_QUESTIONS = result.questions || [];
                     document.getElementById('tournament-status').innerHTML = 
-                        `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung ke Spreadsheet (${RAW_STUDENTS.length} Siswa)`;
+                        `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung (${RAW_STUDENTS.length} Siswa, ${BANK_QUESTIONS.length} Soal)`;
+                    document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
                 } else {
-                    throw new Error(result.message || "Data siswa di sheet 'Siswa' kosong.");
+                    throw new Error("Gagal mengambil data dari spreadsheet.");
                 }
             } catch (error) {
-                console.error("Gagal memuat database:", error);
-                alert("Perhatian: " + error.message + "\n\nPastikan URL Apps Script sudah benar dan sheet bernama 'Siswa' berisi daftar nama.");
-                RAW_STUDENTS = ["PESERTA 1", "PESERTA 2", "PESERTA 3", "PESERTA 4"]; // Cadangan darurat jika gagal koneksi
-                document.getElementById('tournament-status').innerHTML = 
-                    `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> Mode Offline (Gagal terhubung ke Spreadsheet)`;
+                console.error(error);
+                alert("Peringatan: " + error.message);
+                RAW_STUDENTS = ["SISWA 1", "SISWA 2", "SISWA 3", "SISWA 4"];
+                BANK_QUESTIONS = [
+                    { soal: "2 + 2 =", options: { A: "3", B: "4", C: "5", D: "6" }, key: "B" }
+                ];
             } finally {
                 loader.classList.add('hidden');
                 initTournament();
             }
         }
 
-        // Kirim hasil pemenang pertandingan ke Spreadsheet (Sheet Riwayat_Pertandingan)
-        function logMatchToSpreadsheet(roundName, p1, p2, winner, note = "Menang Duel") {
+        function logMatchToSpreadsheet(roundName, p1, p2, winner, note) {
             if (GAS_URL.includes("PASTE_URL_WEB_APP")) return;
             fetch(GAS_URL, {
                 method: "POST",
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    round: roundName,
-                    p1: p1,
-                    p2: p2,
-                    winner: winner,
-                    note: note
-                })
-            }).catch(err => console.error("Gagal mencatat riwayat:", err));
+                body: JSON.stringify({ round: roundName, p1: p1, p2: p2, winner: winner, note: note })
+            }).catch(err => console.error(err));
         }
 
         async function syncDatabase() {
-            if (confirm("Ambil ulang daftar nama terbaru dari Spreadsheet? Bagan saat ini akan di-reset.")) {
-                await fetchStudentsFromDatabase();
+            if (confirm("Sinkronkan ulang data dari Google Spreadsheet?")) {
+                await fetchDatabase();
             }
         }
 
@@ -330,47 +328,6 @@
             }
         }
 
-        function generateMathQuestion() {
-            const types = ['+', '-', 'x', ':'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            let num1, num2, answer;
-
-            switch(type) {
-                case '+':
-                    num1 = Math.floor(Math.random() * 50) + 10;
-                    num2 = Math.floor(Math.random() * 50) + 10;
-                    answer = num1 + num2;
-                    break;
-                case '-':
-                    num1 = Math.floor(Math.random() * 60) + 20;
-                    num2 = Math.floor(Math.random() * (num1 - 5)) + 5;
-                    answer = num1 - num2;
-                    break;
-                case 'x':
-                    num1 = Math.floor(Math.random() * 10) + 2;
-                    num2 = Math.floor(Math.random() * 10) + 2;
-                    answer = num1 * num2;
-                    break;
-                case ':':
-                    num2 = Math.floor(Math.random() * 8) + 2;
-                    answer = Math.floor(Math.random() * 8) + 2;
-                    num1 = num2 * answer;
-                    break;
-            }
-
-            let wrongOffset = (Math.floor(Math.random() * 3) + 1) * (Math.random() > 0.5 ? 1 : -1);
-            let wrongAnswer = answer + wrongOffset;
-            if (wrongAnswer < 0) wrongAnswer = answer + 2;
-
-            let options = [answer, wrongAnswer].sort(() => Math.random() - 0.5);
-
-            return {
-                question: `${num1} ${type === 'x' ? '×' : type === ':' ? '÷' : type} ${num2}`,
-                answer: answer,
-                options: options
-            };
-        }
-
         function initTournament() {
             document.getElementById('total-players-count').innerText = RAW_STUDENTS.length;
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
@@ -385,10 +342,7 @@
                 let p1 = shuffled[playerIdx++] || null;
                 let p2 = shuffled[playerIdx++] || null;
                 let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
-                if (p1 && !p2) {
-                    match.winner = p1;
-                    match.isBye = true;
-                }
+                if (p1 && !p2) { match.winner = p1; match.isBye = true; }
                 round1Matches.push(match);
             }
 
@@ -467,7 +421,7 @@
                             <div class="flex items-center gap-1">
                                 ${statusBadge}
                                 ${!m.winner || m.isBye ? `
-                                    <button onclick="openSwapModal(${rIdx}, ${mIdx}, false)" title="Ganti / Tukar Lawan" class="px-1.5 py-0.5 bg-sky-900/70 hover:bg-sky-700 text-sky-300 border border-sky-700/70 rounded text-[9px] transition">
+                                    <button onclick="openSwapModal(${rIdx}, ${mIdx}, false)" title="Ganti Lawan" class="px-1.5 py-0.5 bg-sky-900/70 hover:bg-sky-700 text-sky-300 rounded text-[9px]">
                                         <i class="fa-solid fa-arrow-right-arrow-left"></i>
                                     </button>
                                 ` : ''}
@@ -476,19 +430,17 @@
                         <div class="space-y-1">
                             <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner && m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
                                 <span class="truncate max-w-[140px]">${m.p1 || '<i class="text-slate-600">- Kosong -</i>'}</span>
-                                ${m.winner && m.winner === m.p1 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
                             <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner && m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
                                 <span class="truncate max-w-[140px]">${m.p2 || '<i class="text-slate-600">- Kosong -</i>'}</span>
-                                ${m.winner && m.winner === m.p2 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
                         </div>
                         ${isReady ? `
                             <div class="mt-2 flex gap-1">
-                                <button onclick="startMatch(${rIdx}, ${mIdx})" class="flex-1 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] rounded transition flex items-center justify-center gap-1">
+                                <button onclick="startMatch(${rIdx}, ${mIdx})" class="flex-1 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] rounded flex items-center justify-center gap-1">
                                     <i class="fa-solid fa-play"></i> MULAI DUEL
                                 </button>
-                                <button onclick="openSkipModalFromBracket(${rIdx}, ${mIdx})" title="WO" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 border border-rose-700 font-bold text-[11px] rounded transition">
+                                <button onclick="openSkipModalFromBracket(${rIdx}, ${mIdx})" title="WO" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 rounded text-[11px]">
                                     <i class="fa-solid fa-user-slash"></i>
                                 </button>
                             </div>
@@ -501,6 +453,223 @@
             });
         }
 
+        function startMatch(rIdx, mIdx) {
+            currentRoundIndex = rIdx;
+            currentMatchIndex = mIdx;
+            activeMatch = tournamentTree[rIdx][mIdx];
+
+            p1Score = 0;
+            p2Score = 0;
+            ropePosition = 0;
+            p1Idx = 0;
+            p2Idx = 0;
+
+            // Ambil 50 soal acak dari bank soal untuk masing-masing pemain
+            let shuffledQuestions = [...BANK_QUESTIONS].sort(() => Math.random() - 0.5);
+            p1Questions = shuffledQuestions.slice(0, 50);
+            
+            let shuffledQuestions2 = [...BANK_QUESTIONS].sort(() => Math.random() - 0.5);
+            p2Questions = shuffledQuestions2.slice(0, 50);
+
+            document.getElementById('p1-name').innerText = activeMatch.p1;
+            document.getElementById('p2-name').innerText = activeMatch.p2;
+            document.getElementById('p1-panel-name').innerText = activeMatch.p1.split(' ')[0];
+            document.getElementById('p2-panel-name').innerText = activeMatch.p2.split(' ')[0];
+            document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
+
+            updateRopeVisual();
+            document.getElementById('bracket-view').classList.add('hidden');
+            document.getElementById('arena-view').classList.remove('hidden');
+
+            // Play Backsound Otomatis
+            bgm.currentTime = 0;
+            bgm.play().catch(e => console.log("Audio autoplay dicegah browser:", e));
+
+            loadPlayerQuestion(1);
+            loadPlayerQuestion(2);
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(questionTimer);
+            timeLeft = 20;
+            document.getElementById('match-timer').innerText = timeLeft;
+
+            questionTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('match-timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    // Waktu habis untuk soal aktif, otomatis anggap salah / lanjut soal berikutnya
+                    handleTimeoutForBoth();
+                }
+            }, 1000);
+        }
+
+        function handleTimeoutForBoth() {
+            // Waktu habis diperlakukan seperti jawaban salah bagi kedua pemain yang belum menjawab
+            p1Idx++;
+            p2Idx++;
+            checkMatchProgress();
+            if (activeMatch && !activeMatch.winner) {
+                loadPlayerQuestion(1);
+                loadPlayerQuestion(2);
+                startTimer();
+            }
+        }
+
+        function loadPlayerQuestion(playerNum) {
+            const qList = playerNum === 1 ? p1Questions : p2Questions;
+            const idx = playerNum === 1 ? p1Idx : p2Idx;
+
+            document.getElementById(`p${playerNum}-q-idx`).innerText = Math.min(idx + 1, qList.length);
+
+            if (idx >= qList.length) {
+                // Habis 50 soal
+                document.getElementById(`p${playerNum}-math-question`).innerText = "Soal Habis!";
+                document.getElementById(`p${playerNum}-options`).innerHTML = "";
+                return;
+            }
+
+            const qData = qList[idx];
+            document.getElementById(`p${playerNum}-math-question`).innerText = qData.soal;
+            
+            const optsContainer = document.getElementById(`p${playerNum}-options`);
+            optsContainer.innerHTML = '';
+
+            ['A', 'B', 'C', 'D'].forEach(optKey => {
+                const optVal = qData.options[optKey];
+                if (!optVal) return;
+
+                const btn = document.createElement('button');
+                btn.className = `py-2 px-1 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-bold text-xs transition border border-slate-600 active:scale-95 flex items-center justify-center gap-1.5`;
+                btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-[10px]">${optKey}</span> <span class="truncate">${optVal}</span>`;
+                
+                btn.onclick = () => handleAnswer(playerNum, optKey);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(playerNum, chosenKey) {
+            const qList = playerNum === 1 ? p1Questions : p2Questions;
+            const idx = playerNum === 1 ? p1Idx : p2Idx;
+            const qData = qList[idx];
+            
+            const isCorrect = (chosenKey === qData.key);
+
+            // Skala pergerakan tali berdasarkan aturan:
+            // 10 soal sampai garis tengah (0.5 per langkah jika 10 soal), 5 soal sampai garis belakang (1.0 per langkah).
+            // Total rentang dari tengah (0) ke belakang (-5 atau +5) adalah 5 poin.
+            const step = 1.0; 
+
+            if (isCorrect) {
+                playSound(600, 'triangle', 0.1);
+                if (playerNum === 1) {
+                    p1Score++;
+                    ropePosition -= step; // Benar P1: Tali mundur (ke arah P1)
+                } else {
+                    p2Score++;
+                    ropePosition += step; // Benar P2: Tali maju (ke arah P2)
+                }
+            } else {
+                playSound(200, 'sawtooth', 0.15);
+                if (playerNum === 1) {
+                    ropePosition += step; // Salah P1: Tali maju (ke arah P2)
+                } else {
+                    ropePosition -= step; // Salah P2: Tali mundur (ke arah P1)
+                }
+            }
+
+            document.getElementById('p1-score').innerText = p1Score;
+            document.getElementById('p2-score').innerText = p2Score;
+            updateRopeVisual();
+
+            // Maju ke soal berikutnya untuk player tersebut
+            if (playerNum === 1) p1Idx++;
+            else p2Idx++;
+
+            checkMatchProgress();
+
+            if (activeMatch && !activeMatch.winner) {
+                loadPlayerQuestion(playerNum);
+                startTimer(); // Reset timer tiap ada jawaban masuk
+            }
+        }
+
+        function updateRopeVisual() {
+            // Batas -5 (garis belakang P1) sampai +5 (garis belakang P2)
+            ropePosition = Math.max(-5, Math.min(5, ropePosition));
+            const leftPercent = 50 + (ropePosition * 10); // 10% per satuan skala (-5 s/d 5)
+            
+            document.getElementById('rope-flag').style.left = `${leftPercent}%`;
+            document.getElementById('player1-mascot').style.left = `${Math.max(2, leftPercent - 22)}%`;
+            document.getElementById('player2-mascot').style.right = `${Math.max(2, (100 - leftPercent) - 22)}%`;
+        }
+
+        function checkMatchProgress() {
+            // Cek kondisi kalah posisi tali
+            if (ropePosition <= -5) {
+                // P1 melewati garis belakang / kalah wilayah
+                finishMatch(activeMatch.p2, "Menang Wilayah / Posisi Tali");
+                return;
+            } else if (ropePosition >= 5) {
+                // P2 melewati garis belakang / kalah wilayah
+                finishMatch(activeMatch.p1, "Menang Wilayah / Posisi Tali");
+                return;
+            }
+
+            // Cek jika kedua pemain sudah menyelesaikan 50 soal
+            if (p1Idx >= 50 && p2Idx >= 50) {
+                if (p1Score > p2Score) {
+                    finishMatch(activeMatch.p1, `Skor Terbanyak (${p1Score} vs ${p2Score})`);
+                } else if (p2Score > p1Score) {
+                    finishMatch(activeMatch.p2, `Skor Terbanyak (${p2Score} vs ${p1Score})`);
+                } else {
+                    // Seri, tentukan berdasar posisi tali akhir atau sudden death
+                    finishMatch(ropePosition <= 0 ? activeMatch.p1 : activeMatch.p2, "Sudden Death / Posisi Tali");
+                }
+            }
+        }
+
+        function finishMatch(winnerName, note) {
+            clearInterval(questionTimer);
+            bgm.pause(); // Matikan backsound
+
+            activeMatch.winner = winnerName;
+            activeMatch.isBye = false;
+            
+            const roundName = getRoundName(currentRoundIndex, tournamentTree.length);
+            logMatchToSpreadsheet(roundName, activeMatch.p1, activeMatch.p2, winnerName, note);
+
+            const nextRoundIdx = currentRoundIndex + 1;
+            if (nextRoundIdx < tournamentTree.length) {
+                const nextMatchIdx = Math.floor(currentMatchIndex / 2);
+                const nextMatch = tournamentTree[nextRoundIdx][nextMatchIdx];
+                if (currentMatchIndex % 2 === 0) nextMatch.p1 = winnerName;
+                else nextMatch.p2 = winnerName;
+            }
+
+            const isFinal = currentRoundIndex === tournamentTree.length - 1;
+            document.getElementById('winner-title').innerText = isFinal ? "🏆 JUARA TURNAMEN 🏆" : "PEMENANG DUEL";
+            document.getElementById('winner-name').innerText = winnerName;
+            document.getElementById('winner-desc').innerText = `(${note}) - Lolos ke babak berikutnya!`;
+
+            document.getElementById('winner-modal').classList.remove('hidden');
+            confetti({ particleCount: isFinal ? 200 : 80, spread: isFinal ? 100 : 60, origin: { y: 0.6 } });
+        }
+
+        function closeWinnerModal() {
+            document.getElementById('winner-modal').classList.add('hidden');
+            showBracketView();
+        }
+
+        function showBracketView() {
+            clearInterval(questionTimer);
+            bgm.pause();
+            document.getElementById('arena-view').classList.add('hidden');
+            document.getElementById('bracket-view').classList.remove('hidden');
+            renderBracket();
+        }
+
         function openSwapModal(rIdx, mIdx, fromArena = false) {
             swapTargetRIdx = rIdx;
             swapTargetMIdx = mIdx;
@@ -508,15 +677,7 @@
             const match = tournamentTree[rIdx][mIdx];
 
             let candidateStudents = new Set();
-            if (rIdx === 0) {
-                RAW_STUDENTS.forEach(s => candidateStudents.add(s));
-            } else {
-                tournamentTree[rIdx].forEach(m => {
-                    if (m.p1) candidateStudents.add(m.p1);
-                    if (m.p2) candidateStudents.add(m.p2);
-                });
-                RAW_STUDENTS.forEach(s => candidateStudents.add(s));
-            }
+            RAW_STUDENTS.forEach(s => candidateStudents.add(s));
 
             const p1Select = document.getElementById('swap-p1-select');
             const p2Select = document.getElementById('swap-p2-select');
@@ -539,167 +700,25 @@
         }
 
         function flipSwapSelects() {
-            const p1Select = document.getElementById('swap-p1-select');
-            const p2Select = document.getElementById('swap-p2-select');
-            const temp = p1Select.value;
-            p1Select.value = p2Select.value;
-            p2Select.value = temp;
+            const p1 = document.getElementById('swap-p1-select');
+            const p2 = document.getElementById('swap-p2-select');
+            const temp = p1.value; p1.value = p2.value; p2.value = temp;
         }
 
-        function closeSwapModal() {
-            document.getElementById('swap-modal').classList.add('hidden');
-        }
+        function closeSwapModal() { document.getElementById('swap-modal').classList.add('hidden'); }
 
         function applyManualSwap() {
             const newP1 = document.getElementById('swap-p1-select').value || null;
             const newP2 = document.getElementById('swap-p2-select').value || null;
-
-            if (newP1 && newP1 === newP2) {
-                alert("Pemain 1 dan Pemain 2 tidak boleh sama!");
-                return;
-            }
-
             const round = tournamentTree[swapTargetRIdx];
             const targetMatch = round[swapTargetMIdx];
             targetMatch.p1 = newP1;
             targetMatch.p2 = newP2;
 
-            round.forEach((m, idx) => {
-                if (m.winner && !m.isBye) return;
-                if (m.p1 && !m.p2) { m.isBye = true; m.winner = m.p1; }
-                else if (!m.p1 && m.p2) { m.isBye = true; m.winner = m.p2; }
-                else { m.isBye = false; m.winner = null; }
-            });
-
             closeSwapModal();
             renderBracket();
             if (swapFromArena && targetMatch.p1 && targetMatch.p2) startMatch(swapTargetRIdx, swapTargetMIdx);
             else if (swapFromArena) showBracketView();
-        }
-
-        function startMatch(rIdx, mIdx) {
-            currentRoundIndex = rIdx;
-            currentMatchIndex = mIdx;
-            activeMatch = tournamentTree[rIdx][mIdx];
-
-            p1Score = 0;
-            p2Score = 0;
-            ropePosition = 0;
-
-            document.getElementById('p1-name').innerText = activeMatch.p1;
-            document.getElementById('p2-name').innerText = activeMatch.p2;
-            document.getElementById('p1-panel-name').innerText = activeMatch.p1.split(' ')[0];
-            document.getElementById('p2-panel-name').innerText = activeMatch.p2.split(' ')[0];
-            document.getElementById('p1-score').innerText = '0';
-            document.getElementById('p2-score').innerText = '0';
-            document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
-
-            updateRopeVisual();
-            document.getElementById('bracket-view').classList.add('hidden');
-            document.getElementById('arena-view').classList.remove('hidden');
-
-            loadNewQuestion(1);
-            loadNewQuestion(2);
-        }
-
-        function loadNewQuestion(playerNum) {
-            const qData = generateMathQuestion();
-            if (playerNum === 1) p1CurrentQ = qData;
-            else p2CurrentQ = qData;
-
-            document.getElementById(`p${playerNum}-math-question`).innerText = qData.question;
-            const optsContainer = document.getElementById(`p${playerNum}-options`);
-            optsContainer.innerHTML = '';
-
-            const labels = ['A', 'B'];
-            qData.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = `py-2 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-extrabold text-base transition border border-slate-600 active:scale-95 flex items-center justify-center gap-2`;
-                btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-xs">${labels[index]}</span> ${opt}`;
-                
-                btn.onclick = () => handleRealtimeAnswer(playerNum, opt);
-                optsContainer.appendChild(btn);
-            });
-        }
-
-        function handleRealtimeAnswer(playerNum, chosenAnswer) {
-            const qData = playerNum === 1 ? p1CurrentQ : p2CurrentQ;
-            const isCorrect = (chosenAnswer === qData.answer);
-
-            if (isCorrect) {
-                playSound(600, 'triangle', 0.1);
-                if (playerNum === 1) {
-                    p1Score++;
-                    ropePosition -= 1.2;
-                } else {
-                    p2Score++;
-                    ropePosition += 1.2;
-                }
-            } else {
-                playSound(200, 'sawtooth', 0.15);
-                if (playerNum === 1) {
-                    ropePosition += 0.5;
-                } else {
-                    ropePosition -= 0.5;
-                }
-            }
-
-            document.getElementById('p1-score').innerText = p1Score;
-            document.getElementById('p2-score').innerText = p2Score;
-            updateRopeVisual();
-
-            if (ropePosition <= -5 || p1Score >= WINNING_SCORE) {
-                finishMatch(activeMatch.p1, "Menang Duel");
-                return;
-            } else if (ropePosition >= 5 || p2Score >= WINNING_SCORE) {
-                finishMatch(activeMatch.p2, "Menang Duel");
-                return;
-            }
-
-            loadNewQuestion(playerNum);
-        }
-
-        function updateRopeVisual() {
-            ropePosition = Math.max(-6, Math.min(6, ropePosition));
-            const leftPercent = 50 + (ropePosition * 7);
-            document.getElementById('rope-flag').style.left = `${leftPercent}%`;
-            document.getElementById('player1-mascot').style.left = `${Math.max(5, leftPercent - 25)}%`;
-            document.getElementById('player2-mascot').style.right = `${Math.max(5, (100 - leftPercent) - 25)}%`;
-        }
-
-        function finishMatch(winnerName, note = "Menang Duel") {
-            activeMatch.winner = winnerName;
-            activeMatch.isBye = false;
-            
-            const roundName = getRoundName(currentRoundIndex, tournamentTree.length);
-            logMatchToSpreadsheet(roundName, activeMatch.p1, activeMatch.p2, winnerName, note);
-
-            const nextRoundIdx = currentRoundIndex + 1;
-            if (nextRoundIdx < tournamentTree.length) {
-                const nextMatchIdx = Math.floor(currentMatchIndex / 2);
-                const nextMatch = tournamentTree[nextRoundIdx][nextMatchIdx];
-                if (currentMatchIndex % 2 === 0) nextMatch.p1 = winnerName;
-                else nextMatch.p2 = winnerName;
-            }
-
-            const isFinal = currentRoundIndex === tournamentTree.length - 1;
-            document.getElementById('winner-title').innerText = isFinal ? "🏆 JUARA TURNAMEN 🏆" : "PEMENANG DUEL";
-            document.getElementById('winner-name').innerText = winnerName;
-            document.getElementById('winner-desc').innerText = isFinal ? "Selamat! Menjadi Juara 1 Matematika Kelas 4 SD!" : "Berhasil menarik tali dan lolos ke babak berikutnya!";
-
-            document.getElementById('winner-modal').classList.remove('hidden');
-            confetti({ particleCount: isFinal ? 200 : 80, spread: isFinal ? 100 : 60, origin: { y: 0.6 } });
-        }
-
-        function closeWinnerModal() {
-            document.getElementById('winner-modal').classList.add('hidden');
-            showBracketView();
-        }
-
-        function showBracketView() {
-            document.getElementById('arena-view').classList.add('hidden');
-            document.getElementById('bracket-view').classList.remove('hidden');
-            renderBracket();
         }
 
         function openSkipModalFromBracket(rIdx, mIdx) {
@@ -709,37 +728,22 @@
             showSkipModal();
         }
 
-        function skipCurrentMatchPrompt() {
-            showSkipModal();
-        }
+        function skipCurrentMatchPrompt() { showSkipModal(); }
 
         function showSkipModal() {
             const container = document.getElementById('skip-modal-options');
             container.innerHTML = `
-                <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl text-white text-xs">
-                    ${activeMatch.p1} Lolos (WO)
-                </button>
-                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 hover:bg-red-500 font-bold rounded-xl text-white text-xs mt-2">
-                    ${activeMatch.p2} Lolos (WO)
-                </button>
+                <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
+                <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-white text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
             document.getElementById('skip-modal').classList.remove('hidden');
         }
 
-        function closeSkipModal() {
-            document.getElementById('skip-modal').classList.add('hidden');
-        }
+        function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
+        function executeSkipWinner(winnerName) { closeSkipModal(); finishMatch(winnerName, "Menang WO"); }
+        function resetTournament() { if (confirm("Acak ulang seluruh bagan turnamen?")) initTournament(); }
 
-        function executeSkipWinner(winnerName) {
-            closeSkipModal();
-            finishMatch(winnerName, "Menang WO");
-        }
-
-        function resetTournament() {
-            if (confirm("Acak ulang seluruh bagan turnamen?")) initTournament();
-        }
-
-        window.onload = () => { fetchStudentsFromDatabase(); };
+        window.onload = () => { fetchDatabase(); };
     </script>
 </body>
 </html>
