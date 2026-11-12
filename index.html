@@ -41,7 +41,7 @@
             <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
             <div>
                 <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA (REAL-TIME)</h1>
-                <p class="text-[11px] text-slate-400">Skala 30 Langkah (10 Langkah ke Tengah, 15 ke Garis Belakang)</p>
+                <p class="text-[11px] text-slate-400">Sistem Tarik Tambang Koordinat (-21 s.d +21)</p>
             </div>
         </div>
         <div class="flex space-x-2">
@@ -86,7 +86,7 @@
                     <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-base border-2 border-blue-400">P1</div>
                     <div>
                         <h3 id="p1-name" class="font-bold text-sm text-blue-400 truncate max-w-[150px]">Pemain 1</h3>
-                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Soal ke-<span id="p1-q-idx">1</span>/50 | Benar: <span id="p1-score">0</span></span>
+                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Posisi: <span id="p1-pos">-10</span> | Benar: <span id="p1-score">0</span></span>
                     </div>
                 </div>
 
@@ -108,7 +108,7 @@
                     <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-base border-2 border-red-400">P2</div>
                     <div>
                         <h3 id="p2-name" class="font-bold text-sm text-red-400 truncate max-w-[150px]">Pemain 2</h3>
-                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Soal ke-<span id="p2-q-idx">1</span>/50 | Benar: <span id="p2-score">0</span></span>
+                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Posisi: <span id="p2-pos">+10</span> | Benar: <span id="p2-score">0</span></span>
                     </div>
                 </div>
             </div>
@@ -116,9 +116,9 @@
             <!-- VISUAL ARENA TARIK TAMBANG -->
             <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 relative shrink-0">
                 <div class="flex justify-between mb-1 text-[11px] font-semibold text-slate-400">
-                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> GARIS BELAKANG (-15) | TENGAH (0)</span>
-                    <span class="text-amber-400">AKURAT PER 1 LANGKAH</span>
-                    <span class="text-red-400">TENGAH (0) | GARIS BELAKANG (+15) <i class="fa-solid fa-arrow-right"></i></span>
+                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> WILAYAH NEGATIF (P1)</span>
+                    <span class="text-amber-400">GARIS TENGAH (0)</span>
+                    <span class="text-red-400">WILAYAH POSITIF (P2) <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
                 <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
@@ -137,7 +137,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-blue-400 uppercase" id="p1-panel-name">P1</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tali maju (+1) | Salah: Tali mundur (-1)</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tarik ke Kiri (-) | Salah: Terdorong ke Kanan (+)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p1-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -151,7 +151,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-red-400 uppercase" id="p2-panel-name">P2</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tali mundur (-1) | Salah: Tali maju (+1)</span>
+                            <span class="text-[10px] text-slate-400">Benar: Tarik ke Kanan (+) | Salah: Terdorong ke Kiri (-)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p2-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -231,7 +231,7 @@
 
         let p1Score = 0;
         let p2Score = 0;
-        let ropePosition = 0; // Skala -15 s/d 15 (Total 30 langkah)
+        let ropePosition = 0; // Pergeseran titik tengah tali dari 0 (-21 sampai +21)
         let p1Questions = [];
         let p2Questions = [];
         let p1Idx = 0;
@@ -451,7 +451,7 @@
 
             p1Score = 0;
             p2Score = 0;
-            ropePosition = 0;
+            ropePosition = 0; // Mulai di titik tengah 0
             p1Idx = 0;
             p2Idx = 0;
 
@@ -542,37 +542,47 @@
             
             const isCorrect = (chosenKey === qData.key);
             
-            // ATURAN PERGESERAN AKURAT:
-            // - P1 benar: Tali maju ke arah P2 (+1 langkah) | P1 salah: Tali mundur ke wilayahnya (-1 langkah)
-            // - P2 benar: Tali mundur ke arah P1 (-1 langkah) | P2 salah: Tali maju ke wilayahnya (+1 langkah)
+            // ATURAN TARIK TAMBANG:
+            // Posisi awal: P1 di -10, P2 di +10. (Jarak relatif terhadap titik 0).
+            // P1 (kiri) benar -> Menarik tali ke arah kiri (negatif): ropePosition berkurang (-1)
+            // P1 salah -> Tali tertarik ke kanan oleh lawan: ropePosition bertambah (+1)
+            // P2 (kanan) benar -> Menarik tali ke arah kanan (positif): ropePosition bertambah (+1)
+            // P2 salah -> Tali tertarik ke kiri oleh lawan: ropePosition berkurang (-1)
             const step = 1; 
 
             if (isCorrect) {
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition += step; // P1 Benar -> Maju ke kanan (+1)
+                    ropePosition -= step; // P1 Tarik ke Kiri (-)
                 } else {
                     p2Score++;
-                    ropePosition -= step; // P2 Benar -> Mundur ke kiri (-1)
+                    ropePosition += step; // P2 Tarik ke Kanan (+)
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
                 if (playerNum === 1) {
-                    ropePosition -= step; // P1 Salah -> Mundur ke kiri (-1)
+                    ropePosition += step; // P1 Salah -> Terdorong ke Kanan (+)
                 } else {
-                    ropePosition += step; // P2 Salah -> Maju ke kanan (+1)
+                    ropePosition -= step; // P2 Salah -> Terdorong ke Kiri (-)
                 }
             }
 
+            // Hitung posisi aktual kedua pemain di koordinat
+            let p1CurrentPos = -10 + ropePosition;
+            let p2CurrentPos = 10 + ropePosition;
+
             document.getElementById('p1-score').innerText = p1Score;
             document.getElementById('p2-score').innerText = p2Score;
-            updateRopeVisual();
+            document.getElementById('p1-pos').innerText = p1CurrentPos;
+            document.getElementById('p2-pos').innerText = p2CurrentPos;
+
+            updateRopeVisual(p1CurrentPos, p2CurrentPos);
 
             if (playerNum === 1) p1Idx++;
             else p2Idx++;
 
-            checkMatchProgress();
+            checkMatchProgress(p1CurrentPos, p2CurrentPos);
 
             if (activeMatch && !activeMatch.winner) {
                 loadPlayerQuestion(playerNum);
@@ -580,24 +590,37 @@
             }
         }
 
-        function updateRopeVisual() {
-            // Batas maksimal -15 (garis belakang P1) sampai +15 (garis belakang P2)
-            ropePosition = Math.max(-15, Math.min(15, ropePosition));
-            
-            // Konversi posisi (-15 s/d 15) ke persentase visual layar
-            const leftPercent = 50 + (ropePosition * (50 / 15));
-            
-            document.getElementById('rope-flag').style.left = `${leftPercent}%`;
-            document.getElementById('player1-mascot').style.left = `${Math.max(2, leftPercent - 22)}%`;
-            document.getElementById('player2-mascot').style.right = `${Math.max(2, (100 - leftPercent) - 22)}%`;
+        function updateRopeVisual(p1Pos, p2Pos) {
+            // Pemetaan koordinat -21 s/d +21 ke persentase layar (0% s/d 100%)
+            const getPercent = (val) => 50 + (val * (50 / 21));
+
+            const p1Percent = getPercent(p1Pos);
+            const p2Percent = getPercent(p2Pos);
+            const flagPercent = (p1Percent + p2Percent) / 2;
+
+            document.getElementById('rope-flag').style.left = `${flagPercent}%`;
+            document.getElementById('player1-mascot').style.left = `${Math.max(2, p1Percent - 5)}%`;
+            document.getElementById('player2-mascot').style.right = `${Math.max(2, 100 - (p2Percent + 5))}%`;
         }
 
-        function checkMatchProgress() {
-            if (ropePosition <= -15) {
-                finishMatch(activeMatch.p1, "Menang Wilayah / Lewati Garis Belakang (-15)");
+        function checkMatchProgress(p1Pos, p2Pos) {
+            // Jika Player 1 menarik Player 2 hingga Player 2 masuk ke wilayah negatif (mencapai -1 atau melewati batas -21), Player 1 Menang.
+            // Atau sebaliknya: Jika Player 2 menarik Player 1 hingga masuk ke wilayah positif (mencapai +1 atau melewati +21), Player 2 Menang.
+            if (p2Pos <= -1) {
+                finishMatch(activeMatch.p1, "Player 1 berhasil menyeret Player 2 ke wilayah negatif!");
                 return;
-            } else if (ropePosition >= 15) {
-                finishMatch(activeMatch.p2, "Menang Wilayah / Lewati Garis Belakang (+15)");
+            } 
+            else if (p1Pos >= 1) {
+                finishMatch(activeMatch.p2, "Player 2 berhasil menyeret Player 1 ke wilayah positif!");
+                return;
+            }
+
+            // Batas maksimal koordinat mutlak (-21 / +21)
+            if (p1Pos <= -21) {
+                finishMatch(activeMatch.p2, "Player 1 melewati batas -21");
+                return;
+            } else if (p2Pos >= 21) {
+                finishMatch(activeMatch.p1, "Player 2 melewati batas +21");
                 return;
             }
 
@@ -607,7 +630,7 @@
                 } else if (p2Score > p1Score) {
                     finishMatch(activeMatch.p2, `Skor Terbanyak (${p2Score} vs ${p1Score})`);
                 } else {
-                    finishMatch(ropePosition >= 0 ? activeMatch.p2 : activeMatch.p1, "Sudden Death / Posisi Tali");
+                    finishMatch(ropePosition <= 0 ? activeMatch.p1 : activeMatch.p2, "Sudden Death / Posisi Tali");
                 }
             }
         }
@@ -718,7 +741,7 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-white text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
-            document.getElementById('skip-modal').classList.remove('hidden');
+            document.getElementById('skip-modal').classList.add('hidden');
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
