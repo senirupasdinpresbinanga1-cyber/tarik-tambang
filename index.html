@@ -15,7 +15,7 @@
         .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 32px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.4s ease-out; }
         .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.4s ease-out; }
         .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.4s ease-out; }
-        .bracket-node { min-width: 190px; border-radius: 8px; font-size: 0.8rem; }
+        .bracket-node { min-width: 210px; border-radius: 8px; font-size: 0.8rem; }
         
         /* Custom Scrollbar untuk Bagan agar bisa digeser nyaman */
         .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
@@ -51,13 +51,13 @@
     <!-- MAIN CONTAINER -->
     <main class="flex-1 overflow-hidden p-3 flex flex-col relative">
         
-        <!-- BAGAN TURNAMEN VIEW (BISA DI-SCROLL HORIZONTAL & VERTICAL) -->
+        <!-- BAGAN TURNAMEN VIEW -->
         <div id="bracket-view" class="h-full flex flex-col">
             <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
                 <div id="tournament-status" class="text-xs font-semibold text-amber-400">
-                    <i class="fa-solid fa-info-circle mr-1"></i> Klik tombol "DUEL" pada bagan untuk memulai pertandingan. (Geser layar ke samping/bawah untuk melihat seluruh bagan)
+                    <i class="fa-solid fa-info-circle mr-1"></i> Klik "DUEL" untuk mulai, atau klik ikon <i class="fa-solid fa-arrow-right-arrow-left text-sky-400 mx-0.5"></i> untuk tukar lawan manual.
                 </div>
-                <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count">45</span> Siswa</div>
+                <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count" class="font-bold text-white">0</span> Siswa</div>
             </div>
 
             <div class="flex-1 overflow-auto custom-scrollbar bg-slate-900/50 rounded-xl border border-slate-800 p-4">
@@ -83,9 +83,15 @@
                 <div class="text-center">
                     <span id="current-match-round" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">Babak Penyisihan</span>
                     <h2 class="text-lg font-black text-slate-200 leading-tight mt-0.5">DUEL TARIK TAMBANG</h2>
-                    <button onclick="skipCurrentMatchPrompt()" class="text-[11px] text-rose-400 hover:text-rose-300 underline font-medium">
-                        <i class="fa-solid fa-user-slash mr-1"></i> Siswa Tidak Hadir? (WO)
-                    </button>
+                    <div class="flex items-center justify-center gap-3 mt-0.5">
+                        <button onclick="openSwapModal(currentRoundIndex, currentMatchIndex, true)" class="text-[11px] text-sky-400 hover:text-sky-300 underline font-medium">
+                            <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Ganti Lawan
+                        </button>
+                        <span class="text-slate-600 text-xs">|</span>
+                        <button onclick="skipCurrentMatchPrompt()" class="text-[11px] text-rose-400 hover:text-rose-300 underline font-medium">
+                            <i class="fa-solid fa-user-slash mr-1"></i> Siswa Tidak Hadir? (WO)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="text-right flex items-center gap-2.5 flex-row-reverse">
@@ -144,6 +150,52 @@
         </div>
 
     </main>
+
+    <!-- MODAL GANTI / TUKAR LAWAN MANUAL -->
+    <div id="swap-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+            <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-700">
+                <div class="w-10 h-10 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center text-lg shrink-0">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-100">Atur / Tukar Lawan Manual</h3>
+                    <p id="swap-match-subtitle" class="text-[11px] text-slate-400">Babak Penyisihan - Match #1</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-blue-400 mb-1">Pemain 1 (Zona Biru):</label>
+                    <select id="swap-p1-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                    </select>
+                </div>
+
+                <div class="flex justify-center">
+                    <button onclick="flipSwapSelects()" title="Tukar P1 & P2" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-full text-[11px] text-slate-300 transition flex items-center gap-1">
+                        <i class="fa-solid fa-retweet"></i> Tukar Posisi P1 & P2
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-red-400 mb-1">Pemain 2 (Zona Merah):</label>
+                    <select id="swap-p2-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500">
+                    </select>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 mb-4">
+                <i class="fa-solid fa-circle-info mr-1"></i> Jika siswa pengganti sudah berada di pertandingan lain pada babak ini, posisinya akan otomatis ditukar agar tidak ada nama ganda.
+            </p>
+
+            <div class="flex gap-2">
+                <button onclick="closeSwapModal()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold transition">Batal</button>
+                <button onclick="applyManualSwap()" class="flex-1 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition shadow-lg">
+                    <i class="fa-solid fa-check mr-1"></i> Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL SKIP / WO -->
     <div id="skip-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
@@ -211,6 +263,11 @@
         let ropePosition = 0;
         const WINNING_SCORE = 3;
 
+        // Variabel untuk fitur Swap Manual
+        let swapTargetRIdx = 0;
+        let swapTargetMIdx = 0;
+        let swapFromArena = false;
+
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(freq, type = 'sine', duration = 0.15) {
             try {
@@ -241,13 +298,11 @@
                 document.documentElement.requestFullscreen().catch(err => {
                     alert(`Gagal masuk mode Full Screen: ${err.message}`);
                 });
-                document.getElementById('fs-icon').className = "fa-solid fa-compress";
                 document.getElementById('fs-btn').innerHTML = `<i class="fa-solid fa-compress"></i> Normal`;
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                 }
-                document.getElementById('fs-icon').className = "fa-solid fa-expand";
                 document.getElementById('fs-btn').innerHTML = `<i class="fa-solid fa-expand"></i> Full Screen`;
             }
         }
@@ -294,8 +349,15 @@
         }
 
         function initTournament() {
+            document.getElementById('total-players-count').innerText = RAW_STUDENTS.length;
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
-            const targetSize = 64;
+            
+            // Menentukan ukuran bagan otomatis (misal 22 siswa -> 32 slot agar pas)
+            let targetSize = 2;
+            while (targetSize < shuffled.length) {
+                targetSize *= 2;
+            }
+
             let round1Matches = [];
             let playerIdx = 0;
 
@@ -303,7 +365,7 @@
                 let p1 = shuffled[playerIdx++] || null;
                 let p2 = shuffled[playerIdx++] || null;
                 let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
-                if (!p2) {
+                if (p1 && !p2) {
                     match.winner = p1;
                     match.isBye = true;
                 }
@@ -330,6 +392,7 @@
         function advanceByes() {
             const r1 = tournamentTree[0];
             const r2 = tournamentTree[1];
+            if (!r2) return;
             r1.forEach((m, idx) => {
                 if (m.isBye && m.winner) {
                     const nextMatchIdx = Math.floor(idx / 2);
@@ -354,7 +417,7 @@
 
             tournamentTree.forEach((round, rIdx) => {
                 const roundCol = document.createElement('div');
-                roundCol.className = 'flex flex-col justify-around py-2 space-y-4 min-w-[200px]';
+                roundCol.className = 'flex flex-col justify-around py-2 space-y-4 min-w-[215px]';
                 
                 const title = document.createElement('h4');
                 title.className = 'text-center font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-2 rounded border border-slate-700 sticky top-0 z-10';
@@ -367,30 +430,38 @@
                 round.forEach((m, mIdx) => {
                     const matchCard = document.createElement('div');
                     const isReady = m.p1 && m.p2 && !m.winner;
+                    const canEdit = !m.winner && (m.p1 || m.p2 || rIdx === 0);
                     
                     matchCard.className = `bracket-node p-2.5 border transition ${
-                        m.winner ? 'bg-slate-800/60 border-slate-700 opacity-80' : 
+                        m.winner ? 'bg-slate-800/60 border-slate-700 opacity-85' : 
                         isReady ? 'bg-indigo-950/80 border-indigo-500 shadow-lg ring-2 ring-indigo-400/30' : 'bg-slate-900 border-slate-800'
                     }`;
 
                     let statusBadge = '';
-                    if (m.winner) statusBadge = `<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded">Selesai</span>`;
-                    else if (m.isBye) statusBadge = `<span class="text-[9px] bg-slate-700 text-slate-400 px-1 py-0.5 rounded">BYE</span>`;
-                    else if (isReady) statusBadge = `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 py-0.5 rounded animate-pulse">Siap</span>`;
+                    if (m.winner && !m.isBye) statusBadge = `<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Selesai</span>`;
+                    else if (m.isBye) statusBadge = `<span class="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded">BYE</span>`;
+                    else if (isReady) statusBadge = `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded animate-pulse">Siap</span>`;
 
                     matchCard.innerHTML = `
-                        <div class="flex justify-between items-center mb-1 border-b border-slate-700/50 pb-1">
+                        <div class="flex justify-between items-center mb-1.5 border-b border-slate-700/50 pb-1">
                             <span class="text-[9px] text-slate-400 font-mono">Match #${mIdx+1}</span>
-                            ${statusBadge}
+                            <div class="flex items-center gap-1">
+                                ${statusBadge}
+                                ${!m.winner || m.isBye ? `
+                                    <button onclick="openSwapModal(${rIdx}, ${mIdx}, false)" title="Ganti / Tukar Lawan Manual" class="px-1.5 py-0.5 bg-sky-900/70 hover:bg-sky-700 text-sky-300 border border-sky-700/70 rounded text-[9px] transition">
+                                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                         <div class="space-y-1">
-                            <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
-                                <span class="truncate max-w-[120px]">${m.p1 || '<i class="text-slate-600">Menunggu</i>'}</span>
-                                ${m.winner === m.p1 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
+                            <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner && m.winner === m.p1 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[140px]">${m.p1 || '<i class="text-slate-600">- Kosong / Menunggu -</i>'}</span>
+                                ${m.winner && m.winner === m.p1 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
-                            <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
-                                <span class="truncate max-w-[120px]">${m.p2 || '<i class="text-slate-600">Menunggu</i>'}</span>
-                                ${m.winner === m.p2 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
+                            <div class="flex justify-between items-center px-2 py-1 rounded text-xs ${m.winner && m.winner === m.p2 ? 'bg-emerald-500/20 font-bold text-emerald-300' : 'bg-slate-800/80'}">
+                                <span class="truncate max-w-[140px]">${m.p2 || '<i class="text-slate-600">- Kosong / Menunggu -</i>'}</span>
+                                ${m.winner && m.winner === m.p2 ? '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i>' : ''}
                             </div>
                         </div>
                         ${isReady ? `
@@ -410,6 +481,151 @@
                 container.appendChild(roundCol);
             });
         }
+
+        // ==================== FITUR TUKAR LAWAN MANUAL ====================
+        function openSwapModal(rIdx, mIdx, fromArena = false) {
+            swapTargetRIdx = rIdx;
+            swapTargetMIdx = mIdx;
+            swapFromArena = fromArena;
+
+            const match = tournamentTree[rIdx][mIdx];
+            const roundName = getRoundName(rIdx, tournamentTree.length);
+            document.getElementById('swap-match-subtitle').innerText = `${roundName} - Match #${mIdx + 1}`;
+
+            // Kumpulkan daftar siswa yang relevan untuk dipilih pada babak ini
+            let candidateStudents = new Set();
+            if (rIdx === 0) {
+                RAW_STUDENTS.forEach(s => candidateStudents.add(s));
+            } else {
+                // Untuk babak lanjutan, ambil semua pemain yang sudah masuk di babak ini
+                tournamentTree[rIdx].forEach(m => {
+                    if (m.p1) candidateStudents.add(m.p1);
+                    if (m.p2) candidateStudents.add(m.p2);
+                });
+                // Tambahkan juga seluruh siswa sebagai opsi darurat
+                RAW_STUDENTS.forEach(s => candidateStudents.add(s));
+            }
+
+            const p1Select = document.getElementById('swap-p1-select');
+            const p2Select = document.getElementById('swap-p2-select');
+            p1Select.innerHTML = `<option value="">-- Kosong (BYE) --</option>`;
+            p2Select.innerHTML = `<option value="">-- Kosong (BYE) --</option>`;
+
+            Array.from(candidateStudents).sort().forEach(student => {
+                // Cari tahu siswa ini sedang berada di Match mana pada babak ini
+                let locInfo = '';
+                tournamentTree[rIdx].forEach((m, idx) => {
+                    if (idx !== mIdx && (m.p1 === student || m.p2 === student)) {
+                        locInfo = ` (di Match #${idx + 1})`;
+                    }
+                });
+
+                const opt1 = document.createElement('option');
+                opt1.value = student;
+                opt1.text = student + locInfo;
+                if (match.p1 === student) opt1.selected = true;
+                p1Select.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = student;
+                opt2.text = student + locInfo;
+                if (match.p2 === student) opt2.selected = true;
+                p2Select.appendChild(opt2);
+            });
+
+            document.getElementById('swap-modal').classList.remove('hidden');
+        }
+
+        function flipSwapSelects() {
+            const p1Select = document.getElementById('swap-p1-select');
+            const p2Select = document.getElementById('swap-p2-select');
+            const temp = p1Select.value;
+            p1Select.value = p2Select.value;
+            p2Select.value = temp;
+        }
+
+        function closeSwapModal() {
+            document.getElementById('swap-modal').classList.add('hidden');
+        }
+
+        function applyManualSwap() {
+            const newP1 = document.getElementById('swap-p1-select').value || null;
+            const newP2 = document.getElementById('swap-p2-select').value || null;
+
+            if (newP1 && newP1 === newP2) {
+                alert("Pemain 1 dan Pemain 2 tidak boleh siswa yang sama!");
+                return;
+            }
+
+            const round = tournamentTree[swapTargetRIdx];
+            const targetMatch = round[swapTargetMIdx];
+            const oldP1 = targetMatch.p1;
+            const oldP2 = targetMatch.p2;
+
+            // Jika newP1 sebelumnya ada di match lain di babak yang sama, tukar dengan oldP1
+            if (newP1 && newP1 !== oldP1 && newP1 !== oldP2) {
+                round.forEach((m, idx) => {
+                    if (idx !== swapTargetMIdx) {
+                        if (m.p1 === newP1) m.p1 = oldP1;
+                        else if (m.p2 === newP1) m.p2 = oldP1;
+                    }
+                });
+            }
+
+            // Jika newP2 sebelumnya ada di match lain di babak yang sama, tukar dengan oldP2
+            if (newP2 && newP2 !== oldP1 && newP2 !== oldP2) {
+                round.forEach((m, idx) => {
+                    if (idx !== swapTargetMIdx) {
+                        if (m.p1 === newP2) m.p1 = oldP2;
+                        else if (m.p2 === newP2) m.p2 = oldP2;
+                    }
+                });
+            }
+
+            targetMatch.p1 = newP1;
+            targetMatch.p2 = newP2;
+
+            // Perbarui status BYE di seluruh babak ini jika terjadi perubahan slot kosong
+            round.forEach((m, idx) => {
+                // Jangan ubah match yang sudah benar-benar selesai bertanding (bukan BYE)
+                if (m.winner && !m.isBye) return;
+
+                if (m.p1 && !m.p2) {
+                    m.isBye = true;
+                    m.winner = m.p1;
+                } else if (!m.p1 && m.p2) {
+                    m.isBye = true;
+                    m.winner = m.p2;
+                } else {
+                    m.isBye = false;
+                    m.winner = null;
+                }
+
+                // Sinkronkan ke babak selanjutnya jika ada
+                const nextRound = tournamentTree[swapTargetRIdx + 1];
+                if (nextRound) {
+                    const nextMatchIdx = Math.floor(idx / 2);
+                    const nextSlot = idx % 2 === 0 ? 'p1' : 'p2';
+                    // Hanya perbarui slot berikutnya jika pertandingan berikutnya belum dimulai/dimenangkan
+                    if (!nextRound[nextMatchIdx].winner) {
+                        nextRound[nextMatchIdx][nextSlot] = m.winner;
+                    }
+                }
+            });
+
+            closeSwapModal();
+            renderBracket();
+
+            // Jika penggantian dilakukan dari dalam Arena Duel
+            if (swapFromArena) {
+                if (targetMatch.p1 && targetMatch.p2) {
+                    startMatch(swapTargetRIdx, swapTargetMIdx);
+                } else {
+                    showBracketView();
+                }
+            }
+        }
+        // ==================================================================
 
         function startMatch(rIdx, mIdx) {
             currentRoundIndex = rIdx;
@@ -508,6 +724,7 @@
 
         function finishMatch(winnerName) {
             activeMatch.winner = winnerName;
+            activeMatch.isBye = false;
             const nextRoundIdx = currentRoundIndex + 1;
             if (nextRoundIdx < tournamentTree.length) {
                 const nextMatchIdx = Math.floor(currentMatchIndex / 2);
