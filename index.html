@@ -231,7 +231,7 @@
 
         let p1Score = 0;
         let p2Score = 0;
-        let ropePosition = 0; // Pergeseran titik tengah tali dari 0 (-21 sampai +21)
+        let ropePosition = 0; 
         let p1Questions = [];
         let p2Questions = [];
         let p1Idx = 0;
@@ -253,25 +253,41 @@
             loader.classList.remove('hidden');
 
             try {
-                const response = await fetch(GAS_URL);
+                // Gunakan mode no-cors / timeout pengaman agar tidak stuck jika GAS error/blokir
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+                const response = await fetch(GAS_URL, { signal: controller.signal });
+                clearTimeout(timeoutId);
                 const result = await response.json();
 
-                if (result.status === "success") {
-                    RAW_STUDENTS = result.students || [];
-                    BANK_QUESTIONS = result.questions || [];
-                    document.getElementById('tournament-status').innerHTML = 
-                        `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung (${RAW_STUDENTS.length} Siswa, ${BANK_QUESTIONS.length} Soal)`;
-                    document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
+                if (result && result.status === "success" && result.students && result.questions) {
+                    RAW_STUDENTS = result.students;
+                    BANK_QUESTIONS = result.questions;
                 } else {
-                    throw new Error("Gagal mengambil data dari spreadsheet.");
+                    throw new Error("Format data spreadsheet tidak valid.");
                 }
+
+                document.getElementById('tournament-status').innerHTML = 
+                    `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung (${RAW_STUDENTS.length} Siswa, ${BANK_QUESTIONS.length} Soal)`;
+                document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } catch (error) {
-                console.error(error);
-                alert("Peringatan: " + error.message);
-                RAW_STUDENTS = ["SISWA 1", "SISWA 2", "SISWA 3", "SISWA 4"];
-                BANK_QUESTIONS = [
-                    { soal: "2 + 2 =", options: { A: "3", B: "4", C: "5", D: "6" }, key: "B" }
+                console.warn("Menggunakan Data Cadangan (Fallback Mode):", error.message);
+                // Data Fallback agar aplikasi langsung jalan tanpa macet
+                RAW_STUDENTS = [
+                    "Asykar Alfatih", "Dian Afika", "Ahmad Fauzan", "Siti Aminah", 
+                    "Budi Santoso", "Dewi Lestari", "Rizky Ramadhan", "Putri Melati"
                 ];
+                BANK_QUESTIONS = [
+                    { soal: "125 + 75 =", options: { A: "190", B: "200", C: "210", D: "220" }, key: "B" },
+                    { soal: "250 - 120 =", options: { A: "120", B: "130", C: "140", D: "150" }, key: "B" },
+                    { soal: "15 × 4 =", options: { A: "50", B: "55", C: "60", D: "65" }, key: "C" },
+                    { soal: "72 ÷ 8 =", options: { A: "8", B: "9", C: "7", D: "6" }, key: "B" },
+                    { soal: "45 + 55 - 20 =", options: { A: "75", B: "80", C: "85", D: "90" }, key: "B" }
+                ];
+                document.getElementById('tournament-status').innerHTML = 
+                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Offline / Cadangan Aktif`;
+                document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } finally {
                 loader.classList.add('hidden');
                 initTournament();
@@ -451,15 +467,15 @@
 
             p1Score = 0;
             p2Score = 0;
-            ropePosition = 0; // Mulai di titik tengah 0
+            ropePosition = 0; 
             p1Idx = 0;
             p2Idx = 0;
 
             let shuffledQuestions = [...BANK_QUESTIONS].sort(() => Math.random() - 0.5);
-            p1Questions = shuffledQuestions.slice(0, 50);
+            p1Questions = shuffledQuestions;
             
             let shuffledQuestions2 = [...BANK_QUESTIONS].sort(() => Math.random() - 0.5);
-            p2Questions = shuffledQuestions2.slice(0, 50);
+            p2Questions = shuffledQuestions2;
 
             document.getElementById('p1-name').innerText = activeMatch.p1;
             document.getElementById('p2-name').innerText = activeMatch.p2;
@@ -467,7 +483,7 @@
             document.getElementById('p2-panel-name').innerText = activeMatch.p2.split(' ')[0];
             document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
 
-            updateRopeVisual();
+            updateRopeVisual(-10, 10);
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.remove('hidden');
 
@@ -496,26 +512,22 @@
         function handleTimeoutForBoth() {
             p1Idx++;
             p2Idx++;
-            checkMatchProgress();
-            if (activeMatch && !activeMatch.winner) {
-                loadPlayerQuestion(1);
-                loadPlayerQuestion(2);
-                startTimer();
-            }
+            loadPlayerQuestion(1);
+            loadPlayerQuestion(2);
+            startTimer();
         }
 
         function loadPlayerQuestion(playerNum) {
             const qList = playerNum === 1 ? p1Questions : p2Questions;
-            const idx = playerNum === 1 ? p1Idx : p2Idx;
-
-            document.getElementById(`p${playerNum}-q-idx`).innerText = Math.min(idx + 1, qList.length);
+            let idx = playerNum === 1 ? p1Idx : p2Idx;
 
             if (idx >= qList.length) {
-                document.getElementById(`p${playerNum}-math-question`).innerText = "Soal Habis!";
-                document.getElementById(`p${playerNum}-options`).innerHTML = "";
-                return;
+                // Loop ulang soal jika habis
+                if (playerNum === 1) p10Idx = 0; else p2Idx = 0;
+                idx = 0;
             }
 
+            document.getElementById(`p${playerNum}-q-idx`).innerText = idx + 1;
             const qData = qList[idx];
             document.getElementById(`p${playerNum}-math-question`).innerText = qData.soal;
             
@@ -541,23 +553,16 @@
             const qData = qList[idx];
             
             const isCorrect = (chosenKey === qData.key);
-            
-            // ATURAN TARIK TAMBANG:
-            // Posisi awal: P1 di -10, P2 di +10. (Jarak relatif terhadap titik 0).
-            // P1 (kiri) benar -> Menarik tali ke arah kiri (negatif): ropePosition berkurang (-1)
-            // P1 salah -> Tali tertarik ke kanan oleh lawan: ropePosition bertambah (+1)
-            // P2 (kanan) benar -> Menarik tali ke arah kanan (positif): ropePosition bertambah (+1)
-            // P2 salah -> Tali tertarik ke kiri oleh lawan: ropePosition berkurang (-1)
             const step = 1; 
 
             if (isCorrect) {
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition -= step; // P1 Tarik ke Kiri (-)
+                    ropePosition -= step; // P1 Benar -> Tarik ke Kiri (-)
                 } else {
                     p2Score++;
-                    ropePosition += step; // P2 Tarik ke Kanan (+)
+                    ropePosition += step; // P2 Benar -> Tarik ke Kanan (+)
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
@@ -568,7 +573,6 @@
                 }
             }
 
-            // Hitung posisi aktual kedua pemain di koordinat
             let p1CurrentPos = -10 + ropePosition;
             let p2CurrentPos = 10 + ropePosition;
 
@@ -591,7 +595,6 @@
         }
 
         function updateRopeVisual(p1Pos, p2Pos) {
-            // Pemetaan koordinat -21 s/d +21 ke persentase layar (0% s/d 100%)
             const getPercent = (val) => 50 + (val * (50 / 21));
 
             const p1Percent = getPercent(p1Pos);
@@ -604,8 +607,6 @@
         }
 
         function checkMatchProgress(p1Pos, p2Pos) {
-            // Jika Player 1 menarik Player 2 hingga Player 2 masuk ke wilayah negatif (mencapai -1 atau melewati batas -21), Player 1 Menang.
-            // Atau sebaliknya: Jika Player 2 menarik Player 1 hingga masuk ke wilayah positif (mencapai +1 atau melewati +21), Player 2 Menang.
             if (p2Pos <= -1) {
                 finishMatch(activeMatch.p1, "Player 1 berhasil menyeret Player 2 ke wilayah negatif!");
                 return;
@@ -615,23 +616,12 @@
                 return;
             }
 
-            // Batas maksimal koordinat mutlak (-21 / +21)
             if (p1Pos <= -21) {
                 finishMatch(activeMatch.p2, "Player 1 melewati batas -21");
                 return;
             } else if (p2Pos >= 21) {
                 finishMatch(activeMatch.p1, "Player 2 melewati batas +21");
                 return;
-            }
-
-            if (p1Idx >= 50 && p2Idx >= 50) {
-                if (p1Score > p2Score) {
-                    finishMatch(activeMatch.p1, `Skor Terbanyak (${p1Score} vs ${p2Score})`);
-                } else if (p2Score > p1Score) {
-                    finishMatch(activeMatch.p2, `Skor Terbanyak (${p2Score} vs ${p1Score})`);
-                } else {
-                    finishMatch(ropePosition <= 0 ? activeMatch.p1 : activeMatch.p2, "Sudden Death / Posisi Tali");
-                }
             }
         }
 
