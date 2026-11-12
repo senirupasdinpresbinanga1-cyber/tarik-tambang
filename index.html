@@ -25,7 +25,7 @@
 
     <!-- AUDIO BACKSOUND GITHUB -->
     <audio id="bgm" loop preload="auto">
-        <source src="https://raw.githubusercontent.com/username/repository/main/backsound.mp3" type="audio/mpeg">
+        <source src="https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3" type="audio/mpeg">
     </audio>
 
     <!-- LOADING OVERLAY -->
@@ -219,11 +219,8 @@
     </div>
 
 <script>
-        // =========================================================================
-        // MASUKKAN URL WEB APP APPS SCRIPT DAN LINK RAW AUDIO GITHUB DI BAWAH INI:
-        // =========================================================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbypg2yTXkgLveQ5uC1ZrwHfQP5KS1628DzRxSD2T7ZsLVRlyo4iM46rBpIhuZeb5Aj_5A/exec";
-        const BACKSOUND_URL = "https://raw.githubusercontent.com/username/repository/main/backsound.mp3";
+        const BACKSOUND_URL = "https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3";
 
         let RAW_STUDENTS = [];
         let BANK_QUESTIONS = [];
@@ -234,7 +231,7 @@
 
         let p1Score = 0;
         let p2Score = 0;
-        let ropePosition = 0; // 0 di tengah, -5 garis belakang P1, +5 garis belakang P2
+        let ropePosition = 0; 
         let p1Questions = [];
         let p2Questions = [];
         let p1Idx = 0;
@@ -246,9 +243,8 @@
         let swapTargetMIdx = 0;
         let swapFromArena = false;
 
-        // Inisialisasi Audio Backsound
         const bgm = document.getElementById('bgm');
-        if (BACKSOUND_URL && !BACKSOUND_URL.includes("username")) {
+        if (BACKSOUND_URL) {
             bgm.src = BACKSOUND_URL;
         }
 
@@ -257,10 +253,6 @@
             loader.classList.remove('hidden');
 
             try {
-                if (GAS_URL.includes("PASTE_URL_WEB_APP")) {
-                    throw new Error("URL Web App Apps Script belum dipasang!");
-                }
-
                 const response = await fetch(GAS_URL);
                 const result = await response.json();
 
@@ -287,7 +279,6 @@
         }
 
         function logMatchToSpreadsheet(roundName, p1, p2, winner, note) {
-            if (GAS_URL.includes("PASTE_URL_WEB_APP")) return;
             fetch(GAS_URL, {
                 method: "POST",
                 mode: "no-cors",
@@ -464,7 +455,6 @@
             p1Idx = 0;
             p2Idx = 0;
 
-            // Ambil 50 soal acak dari bank soal untuk masing-masing pemain
             let shuffledQuestions = [...BANK_QUESTIONS].sort(() => Math.random() - 0.5);
             p1Questions = shuffledQuestions.slice(0, 50);
             
@@ -481,7 +471,6 @@
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.remove('hidden');
 
-            // Play Backsound Otomatis
             bgm.currentTime = 0;
             bgm.play().catch(e => console.log("Audio autoplay dicegah browser:", e));
 
@@ -499,14 +488,12 @@
                 timeLeft--;
                 document.getElementById('match-timer').innerText = timeLeft;
                 if (timeLeft <= 0) {
-                    // Waktu habis untuk soal aktif, otomatis anggap salah / lanjut soal berikutnya
                     handleTimeoutForBoth();
                 }
             }, 1000);
         }
 
         function handleTimeoutForBoth() {
-            // Waktu habis diperlakukan seperti jawaban salah bagi kedua pemain yang belum menjawab
             p1Idx++;
             p2Idx++;
             checkMatchProgress();
@@ -524,7 +511,6 @@
             document.getElementById(`p${playerNum}-q-idx`).innerText = Math.min(idx + 1, qList.length);
 
             if (idx >= qList.length) {
-                // Habis 50 soal
                 document.getElementById(`p${playerNum}-math-question`).innerText = "Soal Habis!";
                 document.getElementById(`p${playerNum}-options`).innerHTML = "";
                 return;
@@ -555,27 +541,23 @@
             const qData = qList[idx];
             
             const isCorrect = (chosenKey === qData.key);
-
-            // Skala pergerakan tali berdasarkan aturan:
-            // 10 soal sampai garis tengah (0.5 per langkah jika 10 soal), 5 soal sampai garis belakang (1.0 per langkah).
-            // Total rentang dari tengah (0) ke belakang (-5 atau +5) adalah 5 poin.
             const step = 1.0; 
 
             if (isCorrect) {
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition -= step; // Benar P1: Tali mundur (ke arah P1)
+                    ropePosition -= step; 
                 } else {
                     p2Score++;
-                    ropePosition += step; // Benar P2: Tali maju (ke arah P2)
+                    ropePosition += step; 
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
                 if (playerNum === 1) {
-                    ropePosition += step; // Salah P1: Tali maju (ke arah P2)
+                    ropePosition += step; 
                 } else {
-                    ropePosition -= step; // Salah P2: Tali mundur (ke arah P1)
+                    ropePosition -= step; 
                 }
             }
 
@@ -583,7 +565,6 @@
             document.getElementById('p2-score').innerText = p2Score;
             updateRopeVisual();
 
-            // Maju ke soal berikutnya untuk player tersebut
             if (playerNum === 1) p1Idx++;
             else p2Idx++;
 
@@ -591,14 +572,13 @@
 
             if (activeMatch && !activeMatch.winner) {
                 loadPlayerQuestion(playerNum);
-                startTimer(); // Reset timer tiap ada jawaban masuk
+                startTimer();
             }
         }
 
         function updateRopeVisual() {
-            // Batas -5 (garis belakang P1) sampai +5 (garis belakang P2)
             ropePosition = Math.max(-5, Math.min(5, ropePosition));
-            const leftPercent = 50 + (ropePosition * 10); // 10% per satuan skala (-5 s/d 5)
+            const leftPercent = 50 + (ropePosition * 10);
             
             document.getElementById('rope-flag').style.left = `${leftPercent}%`;
             document.getElementById('player1-mascot').style.left = `${Math.max(2, leftPercent - 22)}%`;
@@ -606,25 +586,20 @@
         }
 
         function checkMatchProgress() {
-            // Cek kondisi kalah posisi tali
             if (ropePosition <= -5) {
-                // P1 melewati garis belakang / kalah wilayah
                 finishMatch(activeMatch.p2, "Menang Wilayah / Posisi Tali");
                 return;
             } else if (ropePosition >= 5) {
-                // P2 melewati garis belakang / kalah wilayah
                 finishMatch(activeMatch.p1, "Menang Wilayah / Posisi Tali");
                 return;
             }
 
-            // Cek jika kedua pemain sudah menyelesaikan 50 soal
             if (p1Idx >= 50 && p2Idx >= 50) {
                 if (p1Score > p2Score) {
                     finishMatch(activeMatch.p1, `Skor Terbanyak (${p1Score} vs ${p2Score})`);
                 } else if (p2Score > p1Score) {
                     finishMatch(activeMatch.p2, `Skor Terbanyak (${p2Score} vs ${p1Score})`);
                 } else {
-                    // Seri, tentukan berdasar posisi tali akhir atau sudden death
                     finishMatch(ropePosition <= 0 ? activeMatch.p1 : activeMatch.p2, "Sudden Death / Posisi Tali");
                 }
             }
@@ -632,7 +607,7 @@
 
         function finishMatch(winnerName, note) {
             clearInterval(questionTimer);
-            bgm.pause(); // Matikan backsound
+            bgm.pause();
 
             activeMatch.winner = winnerName;
             activeMatch.isBye = false;
