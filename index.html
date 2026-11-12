@@ -25,16 +25,26 @@
 </head>
 <body class="select-none">
 
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-400 mb-3"></i>
+        <p class="text-sm font-bold text-slate-200">Mengambil Data Siswa dari Spreadsheet...</p>
+        <p class="text-xs text-slate-400 mt-1">Mohon tunggu sebentar</p>
+    </div>
+
     <!-- HEADER -->
     <header class="bg-slate-800 border-b border-slate-700 px-4 py-2.5 shadow-lg flex justify-between items-center shrink-0 z-20">
         <div class="flex items-center space-x-3">
             <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
             <div>
                 <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA (REAL-TIME)</h1>
-                <p class="text-[11px] text-slate-400">Kelas 4 SD - Adu Cepat Ketuk Jawab Soal Bersamaan</p>
+                <p class="text-[11px] text-slate-400">Kelas 4 SD - Terhubung Database Spreadsheet</p>
             </div>
         </div>
         <div class="flex space-x-2">
+            <button onclick="syncDatabase()" title="Muat Ulang Data dari Spreadsheet" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-cloud-arrow-down"></i> Sync Data
+            </button>
             <button onclick="toggleFullScreen()" id="fs-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-expand" id="fs-icon"></i> Full Screen
             </button>
@@ -54,7 +64,7 @@
         <div id="bracket-view" class="h-full flex flex-col">
             <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
                 <div id="tournament-status" class="text-xs font-semibold text-amber-400">
-                    <i class="fa-solid fa-info-circle mr-1"></i> Mode Real-Time: Kedua pemain menjawab soal secara bersamaan tanpa antre!
+                    <i class="fa-solid fa-database mr-1"></i> Data Peserta Otomatis dari Google Sheets
                 </div>
                 <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count" class="font-bold text-white">0</span> Siswa</div>
             </div>
@@ -218,17 +228,12 @@
     </div>
 
 <script>
-        const RAW_STUDENTS = [
-            "AIRIN RAHMI ANDINI", "ANINDYA JINAN RISQI", "ANNISA RAMADANI",
-            "ANNISA SALSABILA", "ASYKAR ALFATIH", "DEWA AYU RESTTI GAURI",
-            "DIAN AFIKA", "FITRAH RAMADHAN ABDILLA", "JANUAR MUSA P",
-            "KHARMAWAN", "MIRZA SIDDIQIYAH RUSADY", "MUH FARIS GHAIZAN",
-            "MUH MUHAIMIN FAIZAL. M", "MUH NAUFAL HAFIDZ", "MUH. AL HAFIDZ NASWAR",
-            "MUH. AL QADRI", "MUH. MIRZA UKAIL", "MUHAMMAD ALGHAZHALY",
-            "MUHAMMAD NUR", "UTARI MAHYA SANJAYA", "DZAKIYYA AZALIYYA",
-            "AZIDAN DHIYAULHAQ"
-        ];
+        // =========================================================================
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI:
+        // =========================================================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbypg2yTXkgLveQ5uC1ZrwHfQP5KS1628DzRxSD2T7ZsLVRlyo4iM46rBpIhuZeb5Aj_5A/exec";
 
+        let RAW_STUDENTS = []; // Diisi otomatis dari Google Spreadsheet
         let tournamentTree = [];
         let currentRoundIndex = 0;
         let currentMatchIndex = 0;
@@ -238,11 +243,66 @@
         let ropePosition = 0;
         let p1CurrentQ = null;
         let p2CurrentQ = null;
-        const WINNING_SCORE = 5; // Poin ketukan benar untuk menang
+        const WINNING_SCORE = 5;
 
         let swapTargetRIdx = 0;
         let swapTargetMIdx = 0;
         let swapFromArena = false;
+
+        // Ambil daftar siswa dari Google Spreadsheet
+        async function fetchStudentsFromDatabase() {
+            const loader = document.getElementById('loading-overlay');
+            loader.classList.remove('hidden');
+
+            try {
+                if (GAS_URL.includes("PASTE_URL_WEB_APP")) {
+                    throw new Error("URL Apps Script belum dipasang di kode index.html!");
+                }
+
+                const response = await fetch(GAS_URL);
+                const result = await response.json();
+
+                if (result.status === "success" && Array.isArray(result.students) && result.students.length > 0) {
+                    RAW_STUDENTS = result.students;
+                    document.getElementById('tournament-status').innerHTML = 
+                        `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung ke Spreadsheet (${RAW_STUDENTS.length} Siswa)`;
+                } else {
+                    throw new Error(result.message || "Data siswa di sheet 'Siswa' kosong.");
+                }
+            } catch (error) {
+                console.error("Gagal memuat database:", error);
+                alert("Perhatian: " + error.message + "\n\nPastikan URL Apps Script sudah benar dan sheet bernama 'Siswa' berisi daftar nama.");
+                RAW_STUDENTS = ["PESERTA 1", "PESERTA 2", "PESERTA 3", "PESERTA 4"]; // Cadangan darurat jika gagal koneksi
+                document.getElementById('tournament-status').innerHTML = 
+                    `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> Mode Offline (Gagal terhubung ke Spreadsheet)`;
+            } finally {
+                loader.classList.add('hidden');
+                initTournament();
+            }
+        }
+
+        // Kirim hasil pemenang pertandingan ke Spreadsheet (Sheet Riwayat_Pertandingan)
+        function logMatchToSpreadsheet(roundName, p1, p2, winner, note = "Menang Duel") {
+            if (GAS_URL.includes("PASTE_URL_WEB_APP")) return;
+            fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    round: roundName,
+                    p1: p1,
+                    p2: p2,
+                    winner: winner,
+                    note: note
+                })
+            }).catch(err => console.error("Gagal mencatat riwayat:", err));
+        }
+
+        async function syncDatabase() {
+            if (confirm("Ambil ulang daftar nama terbaru dari Spreadsheet? Bagan saat ini akan di-reset.")) {
+                await fetchStudentsFromDatabase();
+            }
+        }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(freq, type = 'sine', duration = 0.1) {
@@ -538,7 +598,6 @@
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.remove('hidden');
 
-            // Munculkan soal pertama untuk kedua pemain secara bersamaan
             loadNewQuestion(1);
             loadNewQuestion(2);
         }
@@ -558,7 +617,6 @@
                 btn.className = `py-2 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-extrabold text-base transition border border-slate-600 active:scale-95 flex items-center justify-center gap-2`;
                 btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-xs">${labels[index]}</span> ${opt}`;
                 
-                // Jawab langsung tanpa giliran (Real-Time)
                 btn.onclick = () => handleRealtimeAnswer(playerNum, opt);
                 optsContainer.appendChild(btn);
             });
@@ -572,15 +630,15 @@
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition -= 1.2; // Tali bergeser ke kiri
+                    ropePosition -= 1.2;
                 } else {
                     p2Score++;
-                    ropePosition += 1.2; // Tali bergeser ke kanan
+                    ropePosition += 1.2;
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
                 if (playerNum === 1) {
-                    ropePosition += 0.5; // Penalti salah sedikit terdorong
+                    ropePosition += 0.5;
                 } else {
                     ropePosition -= 0.5;
                 }
@@ -590,16 +648,14 @@
             document.getElementById('p2-score').innerText = p2Score;
             updateRopeVisual();
 
-            // Cek kemenangan berdasarkan posisi tali atau skor
             if (ropePosition <= -5 || p1Score >= WINNING_SCORE) {
-                finishMatch(activeMatch.p1);
+                finishMatch(activeMatch.p1, "Menang Duel");
                 return;
             } else if (ropePosition >= 5 || p2Score >= WINNING_SCORE) {
-                finishMatch(activeMatch.p2);
+                finishMatch(activeMatch.p2, "Menang Duel");
                 return;
             }
 
-            // Langsung berikan soal baru TANPA menunggu lawan
             loadNewQuestion(playerNum);
         }
 
@@ -611,9 +667,13 @@
             document.getElementById('player2-mascot').style.right = `${Math.max(5, (100 - leftPercent) - 25)}%`;
         }
 
-        function finishMatch(winnerName) {
+        function finishMatch(winnerName, note = "Menang Duel") {
             activeMatch.winner = winnerName;
             activeMatch.isBye = false;
+            
+            const roundName = getRoundName(currentRoundIndex, tournamentTree.length);
+            logMatchToSpreadsheet(roundName, activeMatch.p1, activeMatch.p2, winnerName, note);
+
             const nextRoundIdx = currentRoundIndex + 1;
             if (nextRoundIdx < tournamentTree.length) {
                 const nextMatchIdx = Math.floor(currentMatchIndex / 2);
@@ -672,14 +732,14 @@
 
         function executeSkipWinner(winnerName) {
             closeSkipModal();
-            finishMatch(winnerName);
+            finishMatch(winnerName, "Menang WO");
         }
 
         function resetTournament() {
             if (confirm("Acak ulang seluruh bagan turnamen?")) initTournament();
         }
 
-        window.onload = () => { initTournament(); };
+        window.onload = () => { fetchStudentsFromDatabase(); };
     </script>
 </body>
 </html>
