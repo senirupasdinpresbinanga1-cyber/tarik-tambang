@@ -253,15 +253,14 @@
             loader.classList.remove('hidden');
 
             try {
-                // Gunakan mode JSONP/CORS handling atau fetch langsung dengan catch pengaman
                 const response = await fetch(GAS_URL, { redirect: "follow" });
                 const result = await response.json();
 
-                if (result && result.status === "success" && result.students && result.questions) {
+                if (result && result.status === "success" && result.students && result.students.length > 0) {
                     RAW_STUDENTS = result.students;
-                    BANK_QUESTIONS = result.questions;
+                    BANK_QUESTIONS = result.questions && result.questions.length > 0 ? result.questions : getFallbackQuestions();
                 } else {
-                    throw new Error("Format data spreadsheet tidak valid.");
+                    throw new Error("Data spreadsheet kosong.");
                 }
 
                 document.getElementById('tournament-status').innerHTML = 
@@ -270,23 +269,28 @@
             } catch (error) {
                 console.warn("Menggunakan Data Cadangan (Fallback Mode):", error.message);
                 RAW_STUDENTS = [
-                    "Asykar Alfatih", "Dian Afika", "Ahmad Fauzan", "Siti Aminah", 
-                    "Budi Santoso", "Dewi Lestari", "Rizky Ramadhan", "Putri Melati"
+                    "Airin Rahmi Andini", "Anindya Jinan Risqi", "Annisa Ramadani", "Annisa Salsabila", 
+                    "Asykar Alfatih", "Cahaya Aura Nazhifa", "Dewa Ayu Restti Gauri", "Dian Afika", 
+                    "Fachru Rafay", "Fitrah Ramadhan Abdilla", "Januar Musa P", "Kharmawan"
                 ];
-                BANK_QUESTIONS = [
-                    { soal: "125 + 75 =", options: { A: "190", B: "200", C: "210", D: "220" }, key: "B" },
-                    { soal: "250 - 120 =", options: { A: "120", B: "130", C: "140", D: "150" }, key: "B" },
-                    { soal: "15 × 4 =", options: { A: "50", B: "55", C: "60", D: "65" }, key: "C" },
-                    { soal: "72 ÷ 8 =", options: { A: "8", B: "9", C: "7", D: "6" }, key: "B" },
-                    { soal: "45 + 55 - 20 =", options: { A: "75", B: "80", C: "85", D: "90" }, key: "B" }
-                ];
+                BANK_QUESTIONS = getFallbackQuestions();
                 document.getElementById('tournament-status').innerHTML = 
-                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Offline / Cadangan Aktif`;
+                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Cadangan Aktif (Cek Sheet Soal)`;
                 document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } finally {
                 loader.classList.add('hidden');
                 initTournament();
             }
+        }
+
+        function getFallbackQuestions() {
+            return [
+                { soal: "125 + 75 =", options: { A: "190", B: "200", C: "210", D: "220" }, key: "B" },
+                { soal: "250 - 120 =", options: { A: "120", B: "130", C: "140", D: "150" }, key: "B" },
+                { soal: "15 × 4 =", options: { A: "50", B: "55", C: "60", D: "65" }, key: "C" },
+                { soal: "72 ÷ 8 =", options: { A: "8", B: "9", C: "7", D: "6" }, key: "B" },
+                { soal: "45 + 55 - 20 =", options: { A: "75", B: "80", C: "85", D: "90" }, key: "B" }
+            ];
         }
 
         function logMatchToSpreadsheet(roundName, p1, p2, winner, note) {
@@ -667,7 +671,7 @@
             let candidateStudents = new Set();
             RAW_STUDENTS.forEach(s => candidateStudents.add(s));
 
-            const p1Select = Document.getElementById('swap-p1-select');
+            const p1Select = document.getElementById('swap-p1-select');
             const p2Select = document.getElementById('swap-p2-select');
             p1Select.innerHTML = `<option value="">-- Kosong --</option>`;
             p2Select.innerHTML = `<option value="">-- Kosong --</option>`;
@@ -724,7 +728,7 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
-            document.getElementById('skip-modal').classList.remove('hidden');
+            document.getElementById('skip-modal').classList.add('hidden');
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
