@@ -253,7 +253,6 @@
             loader.classList.remove('hidden');
 
             try {
-                // Gunakan mode no-cors / timeout pengaman agar tidak stuck jika GAS error/blokir
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 6000);
 
@@ -273,7 +272,6 @@
                 document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } catch (error) {
                 console.warn("Menggunakan Data Cadangan (Fallback Mode):", error.message);
-                // Data Fallback agar aplikasi langsung jalan tanpa macet
                 RAW_STUDENTS = [
                     "Asykar Alfatih", "Dian Afika", "Ahmad Fauzan", "Siti Aminah", 
                     "Budi Santoso", "Dewi Lestari", "Rizky Ramadhan", "Putri Melati"
@@ -522,8 +520,7 @@
             let idx = playerNum === 1 ? p1Idx : p2Idx;
 
             if (idx >= qList.length) {
-                // Loop ulang soal jika habis
-                if (playerNum === 1) p10Idx = 0; else p2Idx = 0;
+                if (playerNum === 1) p1Idx = 0; else p2Idx = 0;
                 idx = 0;
             }
 
@@ -731,7 +728,7 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-white text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
-            document.getElementById('skip-modal').classList.add('hidden');
+            document.getElementById('skip-modal').classList.remove('hidden');
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
