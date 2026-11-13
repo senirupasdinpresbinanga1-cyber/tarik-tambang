@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turnamen Tarik Tambang Matematika Real-Time Kelas 4 SD</title>
+    <title>Turnamen Tarik Tambang Real-Time Kelas 4 SD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/canvas.browser.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -31,7 +31,7 @@
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50">
         <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-400 mb-3"></i>
-        <p class="text-sm font-bold text-slate-200">Memuat Data Database & Soal...</p>
+        <p class="text-sm font-bold text-slate-200">Memuat Data Database, Catatan & Soal...</p>
         <p class="text-xs text-slate-400 mt-1">Mohon tunggu sebentar</p>
     </div>
 
@@ -40,11 +40,14 @@
         <div class="flex items-center space-x-3">
             <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
             <div>
-                <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG MATEMATIKA (REAL-TIME)</h1>
+                <h1 class="text-base font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">CUP TARIK TAMBANG (REAL-TIME)</h1>
                 <p class="text-[11px] text-slate-400">Sistem Tarik Tambang Koordinat (-21 s.d +21)</p>
             </div>
         </div>
         <div class="flex space-x-2">
+            <button onclick="showNotesView()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-book-open"></i> Catatan
+            </button>
             <button onclick="syncDatabase()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-cloud-arrow-down"></i> Sync Data
             </button>
@@ -62,9 +65,44 @@
 
     <!-- MAIN CONTAINER -->
     <main class="flex-1 overflow-hidden p-3 flex flex-col relative">
+
+        <!-- HALAMAN SILAHKAN DI CATAT (MUNCUL PERTAMA SEBELUM BABAK PENYISIHAN) -->
+        <div id="notes-view" class="h-full flex flex-col max-w-4xl mx-auto w-full justify-between py-2">
+            <div class="bg-slate-800/90 border border-amber-500/40 rounded-2xl p-4 shadow-xl flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-[10px] font-bold uppercase tracking-wider">Persiapan Materi</span>
+                        <h2 class="text-xl font-black text-white tracking-wide mt-0.5">SILAHKAN DI CATAT</h2>
+                    </div>
+                </div>
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs text-slate-300 font-semibold">Baca dan salin materi di bawah ini ke buku catatanmu</p>
+                    <p class="text-[11px] text-amber-400">Pertanyaan turnamen diambil dari materi ini!</p>
+                </div>
+            </div>
+
+            <!-- ISI CATATAN DARI DATABASE -->
+            <div class="flex-1 my-3 bg-slate-900/90 border-2 border-slate-700 rounded-2xl p-6 overflow-y-auto custom-scrollbar shadow-inner relative">
+                <div id="notes-content" class="text-slate-100 text-lg md:text-xl leading-relaxed whitespace-pre-line font-medium select-text">
+                    Memuat catatan dari database...
+                </div>
+            </div>
+
+            <!-- TOMBOL LANJUT KE BABAK PENYISIHAN -->
+            <div class="shrink-0 flex justify-end items-center bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                <p class="text-xs text-slate-400 mr-auto pl-2"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Pastikan semua siswa sudah selesai mencatat sebelum memulai.</p>
+                <button onclick="proceedToBracket()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl text-sm shadow-lg transition transform active:scale-95 flex items-center gap-2">
+                    <span>Selesai Mencatat & Masuk Babak Penyisihan</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
         
         <!-- BAGAN TURNAMEN VIEW -->
-        <div id="bracket-view" class="h-full flex flex-col">
+        <div id="bracket-view" class="hidden h-full flex flex-col">
             <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
                 <div id="tournament-status" class="text-xs font-semibold text-amber-400">
                     <i class="fa-solid fa-database mr-1"></i> Terhubung ke Google Sheets
@@ -218,12 +256,13 @@
         </div>
     </div>
 
-<script>
+    <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbypg2yTXkgLveQ5uC1ZrwHfQP5KS1628DzRxSD2T7ZsLVRlyo4iM46rBpIhuZeb5Aj_5A/exec";
         const BACKSOUND_URL = "https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3";
 
         let RAW_STUDENTS = [];
         let BANK_QUESTIONS = [];
+        let MATERI_CATATAN = "";
         let tournamentTree = [];
         let currentRoundIndex = 0;
         let currentMatchIndex = 0;
@@ -259,6 +298,7 @@
                 if (result && result.status === "success" && result.students && result.students.length > 0) {
                     RAW_STUDENTS = result.students;
                     BANK_QUESTIONS = result.questions && result.questions.length > 0 ? result.questions : getFallbackQuestions();
+                    MATERI_CATATAN = result.catatan || "Belum ada catatan di sheet 'Catatan'.";
                 } else {
                     throw new Error("Data spreadsheet kosong.");
                 }
@@ -274,12 +314,15 @@
                     "Fachru Rafay", "Fitrah Ramadhan Abdilla", "Januar Musa P", "Kharmawan"
                 ];
                 BANK_QUESTIONS = getFallbackQuestions();
+                MATERI_CATATAN = "Seni rupa adalah cabang seni yang menghasilkan karya yang dapat dilihat dan dinikmati melalui indra penglihatan. Karya seni rupa memiliki berbagai bentuk, seperti lukisan, gambar, patung, kerajinan, dan maket.";
                 document.getElementById('tournament-status').innerHTML = 
-                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Cadangan Aktif (Cek Sheet Soal)`;
+                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Cadangan Aktif (Cek Sheet)`;
                 document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } finally {
+                document.getElementById('notes-content').innerText = MATERI_CATATAN;
                 loader.classList.add('hidden');
                 initTournament();
+                showNotesView(); // Tampilkan halaman "Silahkan di Catat" terlebih dahulu
             }
         }
 
@@ -291,6 +334,18 @@
                 { soal: "72 ÷ 8 =", options: { A: "8", B: "9", C: "7", D: "6" }, key: "B" },
                 { soal: "45 + 55 - 20 =", options: { A: "75", B: "80", C: "85", D: "90" }, key: "B" }
             ];
+        }
+
+        function showNotesView() {
+            clearInterval(questionTimer);
+            bgm.pause();
+            document.getElementById('bracket-view').classList.add('hidden');
+            document.getElementById('arena-view').classList.add('hidden');
+            document.getElementById('notes-view').classList.remove('hidden');
+        }
+
+        function proceedToBracket() {
+            showBracketView();
         }
 
         function logMatchToSpreadsheet(roundName, p1, p2, winner, note) {
@@ -483,6 +538,7 @@
             document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
 
             updateRopeVisual(-10, 10);
+            document.getElementById('notes-view').classList.add('hidden');
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.remove('hidden');
 
@@ -556,17 +612,17 @@
                 playSound(600, 'triangle', 0.1);
                 if (playerNum === 1) {
                     p1Score++;
-                    ropePosition -= step; // P1 Benar -> Tarik ke Kiri (-)
+                    ropePosition -= step;
                 } else {
                     p2Score++;
-                    ropePosition += step; // P2 Benar -> Tarik ke Kanan (+)
+                    ropePosition += step;
                 }
             } else {
                 playSound(200, 'sawtooth', 0.15);
                 if (playerNum === 1) {
-                    ropePosition += step; // P1 Salah -> Terdorong ke Kanan (+)
+                    ropePosition += step;
                 } else {
-                    ropePosition -= step; // P2 Salah -> Terdorong ke Kiri (-)
+                    ropePosition -= step;
                 }
             }
 
@@ -657,6 +713,7 @@
         function showBracketView() {
             clearInterval(questionTimer);
             bgm.pause();
+            document.getElementById('notes-view').classList.add('hidden');
             document.getElementById('arena-view').classList.add('hidden');
             document.getElementById('bracket-view').classList.remove('hidden');
             renderBracket();
@@ -728,7 +785,7 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
-            document.getElementById('skip-modal').classList.add('hidden');
+            document.getElementById('skip-modal').classList.remove('hidden');
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
