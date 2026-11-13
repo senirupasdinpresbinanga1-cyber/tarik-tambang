@@ -28,6 +28,11 @@
         <source src="https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/mp3.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- AUDIO SOUND PEMENANG (Sekali Saja / Non-Loop) -->
+    <audio id="win-sound" preload="auto">
+        <source src="https://senirupasdinpresbinanga1-cyber.github.io/tarik-tambang/sound.mp3" type="audio/mpeg">
+    </audio>
+
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50">
         <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-400 mb-3"></i>
@@ -291,6 +296,7 @@
         let swapFromArena = false;
 
         const bgm = document.getElementById('bgm');
+        const winSound = document.getElementById('win-sound');
         if (BACKSOUND_URL) {
             bgm.src = BACKSOUND_URL;
         }
@@ -814,6 +820,10 @@
             document.getElementById('winner-name').innerText = winnerName;
             document.getElementById('winner-desc').innerText = `${note} - Lolos ke babak berikutnya!`;
 
+            // Mainkan sound.mp3 sekali saja saat pop-up pemenang muncul
+            winSound.currentTime = 0;
+            winSound.play().catch(e => console.log("Audio winner autoplay dicegah browser:", e));
+
             document.getElementById('winner-modal').classList.remove('hidden');
             confetti({ particleCount: isFinal ? 200 : 80, spread: isFinal ? 100 : 60, origin: { y: 0.6 } });
         }
@@ -899,7 +909,7 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
-            document.getElementById('skip-modal').classList.add('hidden'); // Fix toggle
+            document.getElementById('skip-modal').classList.add('hidden');
             document.getElementById('skip-modal').classList.remove('hidden');
         }
 
@@ -908,7 +918,6 @@
         
         function resetTournament() { 
             if (confirm("Acak ulang seluruh bagan turnamen dan hapus semua data Log Pertandingan di Database?")) {
-                // Kirim request ke Google Apps Script untuk menghapus data LogPertandingan
                 fetch(GAS_URL, {
                     method: "POST",
                     mode: "no-cors",
