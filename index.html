@@ -659,12 +659,12 @@
             p1AnswerCount++;
             p2AnswerCount++;
 
-            if (p1AnswerCount >= 50 && activeMatch && !activeMatch.winner) {
-                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} mencapai batas 50 soal`);
+            if (p1AnswerCount >= 20 && activeMatch && !activeMatch.winner) {
+                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} mencapai batas 20 soal`);
                 return;
             }
-            if (p2AnswerCount >= 50 && activeMatch && !activeMatch.winner) {
-                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} mencapai batas 50 soal`);
+            if (p2AnswerCount >= 20 && activeMatch && !activeMatch.winner) {
+                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} mencapai batas 20 soal`);
                 return;
             }
 
@@ -750,12 +750,12 @@
                 return;
             }
 
-            if (playerNum === 1 && p1AnswerCount >= 50) {
-                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} sudah menjawab 50 soal`);
+            if (playerNum === 1 && p1AnswerCount >= 20) {
+                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} sudah menjawab 20 soal`);
                 return;
             }
-            if (playerNum === 2 && p2AnswerCount >= 50) {
-                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} sudah menjawab 50 soal`);
+            if (playerNum === 2 && p2AnswerCount >= 20) {
+                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} sudah menjawab 20 soal`);
                 return;
             }
 
@@ -820,7 +820,6 @@
             document.getElementById('winner-name').innerText = winnerName;
             document.getElementById('winner-desc').innerText = `${note} - Lolos ke babak berikutnya!`;
 
-            // Mainkan sound.mp3 sekali saja saat pop-up pemenang muncul
             winSound.currentTime = 0;
             winSound.play().catch(e => console.log("Audio winner autoplay dicegah browser:", e));
 
