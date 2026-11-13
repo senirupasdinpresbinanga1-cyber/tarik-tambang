@@ -155,12 +155,26 @@
             <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 relative shrink-0">
                 <div class="flex justify-between mb-1 text-[11px] font-semibold text-slate-400">
                     <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> WILAYAH NEGATIF (P1)</span>
-                    <span class="text-amber-400">GARIS TENGAH (0)</span>
+                    <span class="text-amber-400">BATAS (-1) | GARIS TENGAH (0) | BATAS (+1)</span>
                     <span class="text-red-400">WILAYAH POSITIF (P2) <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
                 <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
-                    <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/50 z-0"></div>
+                    <!-- GARIS BATAS -1 -->
+                    <div style="left: 47.62%;" class="absolute top-0 bottom-0 border-r border-dashed border-blue-400/50 z-0">
+                        <span class="absolute top-1 right-1 text-[9px] font-mono text-blue-400/80">-1</span>
+                    </div>
+
+                    <!-- GARIS TENGAH 0 -->
+                    <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/70 z-0">
+                        <span class="absolute bottom-1 left-1 text-[9px] font-mono text-amber-400/80">0</span>
+                    </div>
+
+                    <!-- GARIS BATAS +1 -->
+                    <div style="left: 52.38%;" class="absolute top-0 bottom-0 border-r border-dashed border-red-400/50 z-0">
+                        <span class="absolute top-1 left-1 text-[9px] font-mono text-red-400/80">+1</span>
+                    </div>
+
                     <div class="rope"></div>
                     <div id="rope-flag" class="flag" style="left: 50%;"></div>
                     <div id="player1-mascot" class="player-left text-3xl transform -scale-x-100">🏃‍♂️</div>
@@ -307,22 +321,18 @@
                     `<i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> Terhubung (${RAW_STUDENTS.length} Siswa, ${BANK_QUESTIONS.length} Soal)`;
                 document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } catch (error) {
-                console.warn("Menggunakan Data Cadangan (Fallback Mode):", error.message);
-                RAW_STUDENTS = [
-                    "Airin Rahmi Andini", "Anindya Jinan Risqi", "Annisa Ramadani", "Annisa Salsabila", 
-                    "Asykar Alfatih", "Cahaya Aura Nazhifa", "Dewa Ayu Restti Gauri", "Dian Afika", 
-                    "Fachru Rafay", "Fitrah Ramadhan Abdilla", "Januar Musa P", "Kharmawan"
-                ];
+                console.warn("Gagal mengambil data dari Google Spreadsheet:", error.message);
+                RAW_STUDENTS = [];
                 BANK_QUESTIONS = getFallbackQuestions();
-                MATERI_CATATAN = "Seni rupa adalah cabang seni yang menghasilkan karya yang dapat dilihat dan dinikmati melalui indra penglihatan. Karya seni rupa memiliki berbagai bentuk, seperti lukisan, gambar, patung, kerajinan, dan maket.";
+                MATERI_CATATAN = "Gagal memuat data dari Spreadsheet. Pastikan koneksi aktif dan URL Apps Script benar.";
                 document.getElementById('tournament-status').innerHTML = 
-                    `<i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1"></i> Mode Cadangan Aktif (Cek Sheet)`;
+                    `<i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1"></i> Gagal Terhubung ke Database`;
                 document.getElementById('total-questions-count').innerText = BANK_QUESTIONS.length;
             } finally {
                 document.getElementById('notes-content').innerText = MATERI_CATATAN;
                 loader.classList.add('hidden');
                 initTournament();
-                showNotesView(); // Tampilkan halaman "Silahkan di Catat" terlebih dahulu
+                showNotesView();
             }
         }
 
@@ -345,6 +355,10 @@
         }
 
         function proceedToBracket() {
+            if (RAW_STUDENTS.length === 0) {
+                alert("Daftar siswa dari database masih kosong! Harap periksa sheet 'Siswa' di Google Spreadsheet Anda.");
+                return;
+            }
             showBracketView();
         }
 
@@ -391,6 +405,12 @@
 
         function initTournament() {
             document.getElementById('total-players-count').innerText = RAW_STUDENTS.length;
+            if (RAW_STUDENTS.length === 0) {
+                tournamentTree = [];
+                renderBracket();
+                return;
+            }
+
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
             
             let targetSize = 2;
@@ -425,6 +445,7 @@
         }
 
         function advanceByes() {
+            if (tournamentTree.length < 2) return;
             const r1 = tournamentTree[0];
             const r2 = tournamentTree[1];
             if (!r2) return;
@@ -449,6 +470,11 @@
         function renderBracket() {
             const container = document.getElementById('bracket-tree');
             container.innerHTML = '';
+
+            if (tournamentTree.length === 0) {
+                container.innerHTML = `<div class="text-slate-400 text-sm p-4">Tidak ada data siswa ditemukan dari sheet "Siswa". Pastikan sheet Google Spreadsheet Anda terisi dengan benar.</div>`;
+                return;
+            }
 
             tournamentTree.forEach((round, rIdx) => {
                 const roundCol = document.createElement('div');
@@ -536,6 +562,11 @@
             document.getElementById('p1-panel-name').innerText = activeMatch.p1.split(' ')[0];
             document.getElementById('p2-panel-name').innerText = activeMatch.p2.split(' ')[0];
             document.getElementById('current-match-round').innerText = getRoundName(rIdx, tournamentTree.length);
+            
+            document.getElementById('p1-score').innerText = 0;
+            document.getElementById('p2-score').innerText = 0;
+            document.getElementById('p1-pos').innerText = -10;
+            document.getElementById('p2-pos').innerText = 10;
 
             updateRopeVisual(-10, 10);
             document.getElementById('notes-view').classList.add('hidden');
@@ -661,11 +692,11 @@
 
         function checkMatchProgress(p1Pos, p2Pos) {
             if (p2Pos <= -1) {
-                finishMatch(activeMatch.p1, "Player 1 berhasil menyeret Player 2 ke wilayah negatif!");
+                finishMatch(activeMatch.p1, "Player 1 berhasil menyeret Player 2 ke wilayah negatif (-1)!");
                 return;
             } 
             else if (p1Pos >= 1) {
-                finishMatch(activeMatch.p2, "Player 2 berhasil menyeret Player 1 ke wilayah positif!");
+                finishMatch(activeMatch.p2, "Player 2 berhasil menyeret Player 1 ke wilayah positif (+1)!");
                 return;
             }
 
