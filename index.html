@@ -285,7 +285,7 @@
         let p1Idx = 0;
         let p2Idx = 0;
         let questionTimer = null;
-        let timeLeft = 10; // Diubah menjadi 10 detik
+        let timeLeft = 10;
 
         let swapTargetRIdx = 0;
         let swapTargetMIdx = 0;
@@ -578,7 +578,7 @@
 
         function startTimer() {
             clearInterval(questionTimer);
-            timeLeft = 10; // Set ke 10 detik per soal
+            timeLeft = 10;
             document.getElementById('match-timer').innerText = timeLeft;
 
             questionTimer = setInterval(() => {
