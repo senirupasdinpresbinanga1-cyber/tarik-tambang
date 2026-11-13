@@ -66,7 +66,7 @@
     <!-- MAIN CONTAINER -->
     <main class="flex-1 overflow-hidden p-3 flex flex-col relative">
 
-        <!-- HALAMAN SILAHKAN DI CATAT (MUNCUL PERTAMA SEBELUM BABAK PENYISIHAN) -->
+        <!-- HALAMAN SILAHKAN DI CATAT -->
         <div id="notes-view" class="h-full flex flex-col max-w-4xl mx-auto w-full justify-between py-2">
             <div class="bg-slate-800/90 border border-amber-500/40 rounded-2xl p-4 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
@@ -91,7 +91,7 @@
                 </div>
             </div>
 
-            <!-- TOMBOL LANJUT KE BABAK PENYISIHAN -->
+            <!-- TOMBOL LANJUT -->
             <div class="shrink-0 flex justify-end items-center bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
                 <p class="text-xs text-slate-400 mr-auto pl-2"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Pastikan semua siswa sudah selesai mencatat sebelum memulai.</p>
                 <button onclick="proceedToBracket()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl text-sm shadow-lg transition transform active:scale-95 flex items-center gap-2">
@@ -130,7 +130,7 @@
 
                 <div class="text-center">
                     <span id="current-match-round" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">Babak Penyisihan</span>
-                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">WAKTU: <span id="match-timer" class="text-amber-400 font-mono">20</span>s</h2>
+                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">WAKTU: <span id="match-timer" class="text-amber-400 font-mono">10</span>s</h2>
                     <div class="flex items-center justify-center gap-3 mt-0.5">
                         <button onclick="openSwapModal(currentRoundIndex, currentMatchIndex, true)" class="text-[11px] text-sky-400 hover:text-sky-300 underline font-medium">
                             <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Ganti Lawan
@@ -160,17 +160,12 @@
                 </div>
                 
                 <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
-                    <!-- GARIS BATAS -1 -->
                     <div style="left: 47.62%;" class="absolute top-0 bottom-0 border-r border-dashed border-blue-400/50 z-0">
                         <span class="absolute top-1 right-1 text-[9px] font-mono text-blue-400/80">-1</span>
                     </div>
-
-                    <!-- GARIS TENGAH 0 -->
                     <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/70 z-0">
                         <span class="absolute bottom-1 left-1 text-[9px] font-mono text-amber-400/80">0</span>
                     </div>
-
-                    <!-- GARIS BATAS +1 -->
                     <div style="left: 52.38%;" class="absolute top-0 bottom-0 border-r border-dashed border-red-400/50 z-0">
                         <span class="absolute top-1 left-1 text-[9px] font-mono text-red-400/80">+1</span>
                     </div>
@@ -182,7 +177,7 @@
                 </div>
             </div>
 
-            <!-- AREA SOAL Pilihan Ganda A, B, C, D -->
+            <!-- AREA SOAL Pilihan Ganda -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden pb-1">
                 <!-- P1 PANEL -->
                 <div class="bg-slate-800/90 p-3 rounded-xl border-2 border-blue-500 flex flex-col justify-between">
@@ -290,7 +285,7 @@
         let p1Idx = 0;
         let p2Idx = 0;
         let questionTimer = null;
-        let timeLeft = 20;
+        let timeLeft = 10; // Diubah menjadi 10 detik
 
         let swapTargetRIdx = 0;
         let swapTargetMIdx = 0;
@@ -338,11 +333,11 @@
 
         function getFallbackQuestions() {
             return [
-                { soal: "125 + 75 =", options: { A: "190", B: "200", C: "210", D: "220" }, key: "B" },
-                { soal: "250 - 120 =", options: { A: "120", B: "130", C: "140", D: "150" }, key: "B" },
-                { soal: "15 × 4 =", options: { A: "50", B: "55", C: "60", D: "65" }, key: "C" },
-                { soal: "72 ÷ 8 =", options: { A: "8", B: "9", C: "7", D: "6" }, key: "B" },
-                { soal: "45 + 55 - 20 =", options: { A: "75", B: "80", C: "85", D: "90" }, key: "B" }
+                { 
+                    soal: "Data soal belum terbaca dari Spreadsheet atau sheet 'Soal' kosong.", 
+                    options: { A: "Cek Koneksi Internet", B: "Periksa Sheet Soal", C: "Sync Ulang Data", D: "Deploy Ulang Apps Script" }, 
+                    key: "B" 
+                }
             ];
         }
 
@@ -583,7 +578,7 @@
 
         function startTimer() {
             clearInterval(questionTimer);
-            timeLeft = 20;
+            timeLeft = 10; // Set ke 10 detik per soal
             document.getElementById('match-timer').innerText = timeLeft;
 
             questionTimer = setInterval(() => {
@@ -623,8 +618,8 @@
                 if (!optVal) return;
 
                 const btn = document.createElement('button');
-                btn.className = `py-2 px-1 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-bold text-xs transition border border-slate-600 active:scale-95 flex items-center justify-center gap-1.5`;
-                btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-[10px]">${optKey}</span> <span class="truncate">${optVal}</span>`;
+                btn.className = `py-2 px-2 bg-slate-700 hover:bg-${playerNum === 1 ? 'blue' : 'red'}-600 rounded-lg font-bold text-xs transition border border-slate-600 active:scale-95 flex items-center justify-start text-left gap-2`;
+                btn.innerHTML = `<span class="px-1.5 py-0.5 bg-slate-900 rounded text-amber-400 text-[10px] shrink-0">${optKey}</span> <span class="leading-tight">${optVal}</span>`;
                 
                 btn.onclick = () => handleAnswer(playerNum, optKey);
                 optsContainer.appendChild(btn);
