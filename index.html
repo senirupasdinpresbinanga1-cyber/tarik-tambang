@@ -12,7 +12,8 @@
         body { font-family: 'Fredoka', sans-serif; background-color: #0f172a; color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .rope-container { position: relative; height: 130px; width: 100%; overflow: hidden; }
         .rope { position: absolute; top: 50%; height: 14px; background: #d97706; transform: translateY(-50%); width: 200%; left: -50%; border-radius: 7px; border: 2px solid #78350f; }
-        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 22px; height: 32px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.15s ease-out; }
+        /* Bendera merah ukuran normal (tidak terlalu lebar) */
+        .flag { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 34px; background: #ef4444; border-radius: 4px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); z-index: 10; transition: left 0.15s ease-out; border: 2px solid #b91c1c; }
         .player-left { position: absolute; left: 10%; bottom: 15px; transition: left 0.15s ease-out; }
         .player-right { position: absolute; right: 10%; bottom: 15px; transition: right 0.15s ease-out; }
         .bracket-node { min-width: 210px; border-radius: 8px; font-size: 0.8rem; }
@@ -105,7 +106,7 @@
         <div id="bracket-view" class="hidden h-full flex flex-col">
             <div class="mb-3 flex justify-between items-center bg-slate-800/90 px-3 py-2 rounded-xl border border-slate-700 shrink-0">
                 <div id="tournament-status" class="text-xs font-semibold text-amber-400">
-                    <i class="fa-solid fa-database mr-1"></i> Terhubung ke Google Sheets
+                    <i class="fa-solid fa-database mr-1"></i> Terhubung ke Google Sheets[cite: 1]
                 </div>
                 <div class="text-xs text-slate-400">Total Peserta: <span id="total-players-count" class="font-bold text-white">0</span> Siswa | Bank Soal: <span id="total-questions-count" class="font-bold text-white">0</span> Soal</div>
             </div>
@@ -124,7 +125,7 @@
                     <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-base border-2 border-blue-400">P1</div>
                     <div>
                         <h3 id="p1-name" class="font-bold text-sm text-blue-400 truncate max-w-[150px]">Pemain 1</h3>
-                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Posisi: <span id="p1-pos">-10</span> | Benar: <span id="p1-score">0</span></span>
+                        <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800">Benar: <span id="p1-score">0</span></span>
                     </div>
                 </div>
 
@@ -146,29 +147,26 @@
                     <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-base border-2 border-red-400">P2</div>
                     <div>
                         <h3 id="p2-name" class="font-bold text-sm text-red-400 truncate max-w-[150px]">Pemain 2</h3>
-                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Posisi: <span id="p2-pos">+10</span> | Benar: <span id="p2-score">0</span></span>
+                        <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">Benar: <span id="p2-score">0</span></span>
                     </div>
                 </div>
             </div>
 
-            <!-- VISUAL ARENA TARIK TAMBANG -->
+            <!-- VISUAL ARENA (Tanpa Angka dan Tanpa Keterangan Wilayah) -->
             <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 relative shrink-0">
                 <div class="flex justify-between mb-1 text-[11px] font-semibold text-slate-400">
-                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> WILAYAH NEGATIF (P1)</span>
-                    <span class="text-amber-400">BATAS (-1) | GARIS TENGAH (0) | BATAS (+1)</span>
-                    <span class="text-red-400">WILAYAH POSITIF (P2) <i class="fa-solid fa-arrow-right"></i></span>
+                    <span class="text-blue-400"><i class="fa-solid fa-arrow-left"></i> PEMAIN 1</span>
+                    <span class="text-amber-400">GARIS TENGAH</span>
+                    <span class="text-red-400">PEMAIN 2 <i class="fa-solid fa-arrow-right"></i></span>
                 </div>
                 
                 <div class="rope-container bg-slate-900 rounded-lg border border-slate-700">
-                    <div style="left: 47.62%;" class="absolute top-0 bottom-0 border-r border-dashed border-blue-400/50 z-0">
-                        <span class="absolute top-1 right-1 text-[9px] font-mono text-blue-400/80">-1</span>
-                    </div>
-                    <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/70 z-0">
-                        <span class="absolute bottom-1 left-1 text-[9px] font-mono text-amber-400/80">0</span>
-                    </div>
-                    <div style="left: 52.38%;" class="absolute top-0 bottom-0 border-r border-dashed border-red-400/50 z-0">
-                        <span class="absolute top-1 left-1 text-[9px] font-mono text-red-400/80">+1</span>
-                    </div>
+                    <!-- Garis Batas Kiri -->
+                    <div style="left: 47.62%;" class="absolute top-0 bottom-0 border-r border-dashed border-blue-400/50 z-0"></div>
+                    <!-- Garis Tengah -->
+                    <div class="absolute left-1/2 top-0 bottom-0 border-r-2 border-dashed border-amber-500/70 z-0"></div>
+                    <!-- Garis Batas Kanan -->
+                    <div style="left: 52.38%;" class="absolute top-0 bottom-0 border-r border-dashed border-red-400/50 z-0"></div>
 
                     <div class="rope"></div>
                     <div id="rope-flag" class="flag" style="left: 50%;"></div>
@@ -184,7 +182,6 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-blue-400 uppercase" id="p1-panel-name">P1</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tarik ke Kiri (-) | Salah: Terdorong ke Kanan (+)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p1-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -198,7 +195,6 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-red-400 uppercase" id="p2-panel-name">P2</span>
-                            <span class="text-[10px] text-slate-400">Benar: Tarik ke Kanan (+) | Salah: Terdorong ke Kiri (-)</span>
                         </div>
                         <div class="text-center py-2 bg-slate-900 rounded-lg border border-slate-700 mb-2 min-h-[50px] flex items-center justify-center px-2">
                             <span id="p2-math-question" class="text-sm font-bold text-amber-300">Memuat soal...</span>
@@ -687,19 +683,19 @@
 
         function checkMatchProgress(p1Pos, p2Pos) {
             if (p2Pos <= -1) {
-                finishMatch(activeMatch.p1, "Player 1 berhasil menyeret Player 2 ke wilayah negatif (-1)!");
+                finishMatch(activeMatch.p1, `${activeMatch.p1} berhasil menyeret ${activeMatch.p2}`);
                 return;
             } 
             else if (p1Pos >= 1) {
-                finishMatch(activeMatch.p2, "Player 2 berhasil menyeret Player 1 ke wilayah positif (+1)!");
+                finishMatch(activeMatch.p2, `${activeMatch.p2} berhasil menyeret ${activeMatch.p1}`);
                 return;
             }
 
             if (p1Pos <= -21) {
-                finishMatch(activeMatch.p2, "Player 1 melewati batas -21");
+                finishMatch(activeMatch.p2, `${activeMatch.p2} berhasil menyeret ${activeMatch.p1}`);
                 return;
             } else if (p2Pos >= 21) {
-                finishMatch(activeMatch.p1, "Player 2 melewati batas +21");
+                finishMatch(activeMatch.p1, `${activeMatch.p1} berhasil menyeret ${activeMatch.p2}`);
                 return;
             }
         }
@@ -725,7 +721,7 @@
             const isFinal = currentRoundIndex === tournamentTree.length - 1;
             document.getElementById('winner-title').innerText = isFinal ? "🏆 JUARA TURNAMEN 🏆" : "PEMENANG DUEL";
             document.getElementById('winner-name').innerText = winnerName;
-            document.getElementById('winner-desc').innerText = `(${note}) - Lolos ke babak berikutnya!`;
+            document.getElementById('winner-desc').innerText = `${note} - Lolos ke babak berikutnya!`;
 
             document.getElementById('winner-modal').classList.remove('hidden');
             confetti({ particleCount: isFinal ? 200 : 80, spread: isFinal ? 100 : 60, origin: { y: 0.6 } });
@@ -815,7 +811,7 @@
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
-        function executeSkipWinner(winnerName) { closeSkipModal(); finishMatch(winnerName, "Menang WO"); }
+        function executeSkipWinner(winnerName) { closeSkipModal(); finishMatch(winnerName, `${winnerName} menang WO`); }
         function resetTournament() { if (confirm("Acak ulang seluruh bagan turnamen?")) initTournament(); }
 
         window.onload = () => { fetchDatabase(); };
