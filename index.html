@@ -54,7 +54,7 @@
             <button onclick="toggleFullScreen()" id="fs-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-expand"></i> Full Screen
             </button>
-            <button onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+            <button id="back-btn" onclick="showBracketView()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 hidden">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </button>
             <button id="reset-btn" onclick="resetTournament()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
@@ -295,19 +295,22 @@
             bgm.src = BACKSOUND_URL;
         }
 
-        function setArenaHeaderMode(isArena) {
+        function updateHeaderView(view) {
             const notesBtn = document.getElementById('notes-btn');
             const syncBtn = document.getElementById('sync-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const backBtn = document.getElementById('back-btn');
 
-            if (isArena) {
+            if (view === 'arena') {
                 if (notesBtn) notesBtn.classList.add('hidden');
                 if (syncBtn) syncBtn.classList.add('hidden');
                 if (resetBtn) resetBtn.classList.add('hidden');
+                if (backBtn) backBtn.classList.remove('hidden');
             } else {
                 if (notesBtn) notesBtn.classList.remove('hidden');
                 if (syncBtn) syncBtn.classList.remove('hidden');
                 if (resetBtn) resetBtn.classList.remove('hidden');
+                if (backBtn) backBtn.classList.add('hidden');
             }
         }
 
@@ -359,7 +362,7 @@
         function showNotesView() {
             clearInterval(questionTimer);
             bgm.pause();
-            setArenaHeaderMode(false);
+            updateHeaderView('notes');
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.add('hidden');
             document.getElementById('notes-view').classList.remove('hidden');
@@ -433,7 +436,6 @@
 
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
             
-            // Match babak penyisihan disesuaikan otomatis dengan jumlah siswa (Math.ceil(shuffled.length / 2))
             let round1Count = Math.ceil(shuffled.length / 2);
             let round1Matches = [];
             let playerIdx = 0;
@@ -448,7 +450,6 @@
 
             tournamentTree = [round1Matches];
             
-            // Membuat babak berikutnya secara otomatis berdasarkan setengah dari jumlah match sebelumnya
             let currentMatches = round1Count;
             let roundNum = 2;
             while (currentMatches > 1) {
@@ -619,7 +620,7 @@
 
             updateRopeVisual(-5, 5);
             
-            setArenaHeaderMode(true);
+            updateHeaderView('arena');
             document.getElementById('notes-view').classList.add('hidden');
             document.getElementById('bracket-view').classList.add('hidden');
             document.getElementById('arena-view').classList.remove('hidden');
@@ -739,12 +740,10 @@
             if (playerNum === 1) p1Idx++;
             else p2Idx++;
 
-            // Cek kemenangan via tarikan tali
             if (checkMatchProgress(p1CurrentPos, p2CurrentPos)) {
                 return;
             }
 
-            // Cek batas 50x menjawab
             if (playerNum === 1 && p1AnswerCount >= 50) {
                 finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} sudah menjawab 50 soal`);
                 return;
@@ -827,7 +826,7 @@
         function showBracketView() {
             clearInterval(questionTimer);
             bgm.pause();
-            setArenaHeaderMode(false);
+            updateHeaderView('bracket');
             document.getElementById('notes-view').classList.add('hidden');
             document.getElementById('arena-view').classList.add('hidden');
             document.getElementById('bracket-view').classList.remove('hidden');
