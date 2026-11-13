@@ -433,13 +433,12 @@
 
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
             
-            let targetSize = 2;
-            while (targetSize < shuffled.length) targetSize *= 2;
-
+            // Match babak penyisihan disesuaikan otomatis dengan jumlah siswa (Math.ceil(shuffled.length / 2))
+            let round1Count = Math.ceil(shuffled.length / 2);
             let round1Matches = [];
             let playerIdx = 0;
 
-            for (let i = 0; i < targetSize / 2; i++) {
+            for (let i = 0; i < round1Count; i++) {
                 let p1 = shuffled[playerIdx++] || null;
                 let p2 = shuffled[playerIdx++] || null;
                 let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
@@ -448,12 +447,14 @@
             }
 
             tournamentTree = [round1Matches];
-            let currentSize = targetSize / 2;
+            
+            // Membuat babak berikutnya secara otomatis berdasarkan setengah dari jumlah match sebelumnya
+            let currentMatches = round1Count;
             let roundNum = 2;
-            while (currentSize > 1) {
-                currentSize /= 2;
+            while (currentMatches > 1) {
+                currentMatches = Math.ceil(currentMatches / 2);
                 let round = [];
-                for (let i = 0; i < currentSize; i++) {
+                for (let i = 0; i < currentMatches; i++) {
                     round.push({ id: `R${roundNum}-M${i}`, p1: null, p2: null, winner: null, isBye: false });
                 }
                 tournamentTree.push(round);
@@ -483,8 +484,27 @@
             if (remaining === 1) return "BABAK FINAL 🏆";
             if (remaining === 2) return "SEMI FINAL";
             if (remaining === 3) return "PEREMPAT FINAL";
+            if (roundIdx === 1) return "BABAK 2";
             if (roundIdx === 0) return "BABAK PENYISIHAN";
             return `BABAK ${roundIdx + 1}`;
+        }
+
+        function adjustRoundMatches(rIdx, delta) {
+            let round = tournamentTree[rIdx];
+            if (!round) return;
+
+            if (delta > 0) {
+                let newMIdx = round.length;
+                round.push({ id: `R${rIdx+1}-M${newMIdx}`, p1: null, p2: null, winner: null, isBye: false });
+            } else if (delta < 0) {
+                if (round.length > 1) {
+                    round.pop();
+                } else {
+                    alert("Minimal harus ada 1 match di setiap babak.");
+                    return;
+                }
+            }
+            renderBracket();
         }
 
         function renderBracket() {
@@ -500,9 +520,16 @@
                 const roundCol = document.createElement('div');
                 roundCol.className = 'flex flex-col justify-around py-2 space-y-4 min-w-[215px]';
                 
-                const title = document.createElement('h4');
-                title.className = 'text-center font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-2 rounded border border-slate-700 sticky top-0 z-10';
-                title.innerText = getRoundName(rIdx, tournamentTree.length);
+                const title = document.createElement('div');
+                title.className = 'flex items-center justify-between font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-2 rounded border border-slate-700 sticky top-0 z-10';
+                title.innerHTML = `
+                    <span>${getRoundName(rIdx, tournamentTree.length)}</span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="adjustRoundMatches(${rIdx}, -1)" title="Kurangi Match" class="w-5 h-5 bg-slate-700 hover:bg-slate-600 text-white rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-minus"></i></button>
+                        <span class="text-[10px] px-1 font-mono">${round.length}</span>
+                        <button onclick="adjustRoundMatches(${rIdx}, 1)" title="Tambah Match" class="w-5 h-5 bg-slate-700 hover:bg-slate-600 text-white rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                `;
                 roundCol.appendChild(title);
 
                 const matchesDiv = document.createElement('div');
@@ -527,11 +554,9 @@
                             <span class="text-[9px] text-slate-400 font-mono">Match #${mIdx+1}</span>
                             <div class="flex items-center gap-1">
                                 ${statusBadge}
-                                ${!m.winner || m.isBye ? `
-                                    <button onclick="openSwapModal(${rIdx}, ${mIdx}, false)" title="Ganti Lawan" class="px-1.5 py-0.5 bg-sky-900/70 hover:bg-sky-700 text-sky-300 rounded text-[9px]">
-                                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                                    </button>
-                                ` : ''}
+                                <button onclick="openSwapModal(${rIdx}, ${mIdx}, false)" title="Ganti Lawan" class="px-1.5 py-0.5 bg-sky-900/70 hover:bg-sky-700 text-sky-300 rounded text-[9px]">
+                                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="space-y-1">
