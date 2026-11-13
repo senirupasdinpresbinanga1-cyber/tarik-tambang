@@ -899,12 +899,26 @@
                 <button onclick="executeSkipWinner('${activeMatch.p1}')" class="w-full py-2 bg-blue-600 font-bold rounded-xl text-white text-xs mb-2">${activeMatch.p1} Lolos (WO)</button>
                 <button onclick="executeSkipWinner('${activeMatch.p2}')" class="w-full py-2 bg-red-600 font-bold rounded-xl text-xs">${activeMatch.p2} Lolos (WO)</button>
             `;
+            document.getElementById('skip-modal').classList.add('hidden'); // Fix toggle
             document.getElementById('skip-modal').classList.remove('hidden');
         }
 
         function closeSkipModal() { document.getElementById('skip-modal').classList.add('hidden'); }
         function executeSkipWinner(winnerName) { closeSkipModal(); finishMatch(winnerName, `${winnerName} menang WO`); }
-        function resetTournament() { if (confirm("Acak ulang seluruh bagan turnamen?")) initTournament(); }
+        
+        function resetTournament() { 
+            if (confirm("Acak ulang seluruh bagan turnamen dan hapus semua data Log Pertandingan di Database?")) {
+                // Kirim request ke Google Apps Script untuk menghapus data LogPertandingan
+                fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "clear_log" })
+                }).catch(err => console.error(err));
+
+                initTournament();
+            }
+        }
 
         window.onload = () => { fetchDatabase(); };
     </script>
