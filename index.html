@@ -485,8 +485,8 @@
             renderBracket();
         }
 
-        // Menyelaraskan aliran pemenang & BYE di semua babak (Babak 1, Babak 2, Perempat Final, Semifinal, Final)
-        // Agar jika ada babak dengan jumlah match ganjil, Match #1 otomatis mendapat BYE dan lolos ke babak selanjutnya
+        // FUNGSI UTAMA: Alur pemenang babak ganjil langsung masuk ke Match #1 lawan BYE,
+        // sedangkan pemenang dari Match #2 & #3 masuk ke Match #2 babak berikutnya, dst.
         function syncAllRoundsProgression() {
             for (let rIdx = 0; rIdx < tournamentTree.length - 1; rIdx++) {
                 const currentRound = tournamentTree[rIdx];
@@ -495,40 +495,50 @@
                 // Cek apakah jumlah match di babak ini ganjil (> 1)
                 if (currentRound.length > 1 && currentRound.length % 2 !== 0) {
                     const firstMatch = currentRound[0];
-                    // Jika Match #1 hanya memiliki 1 pemain (p1 terisi, p2 kosong) dan belum selesai bertanding
                     if (firstMatch.p1 && !firstMatch.p2 && !firstMatch.winner) {
                         firstMatch.winner = firstMatch.p1;
                         firstMatch.isBye = true;
-                    }
-                    // Jika p2 kemudian diisi manual oleh guru, batalkan status BYE otomatisnya
-                    else if (firstMatch.p1 && firstMatch.p2 && firstMatch.isBye) {
+                    } else if (firstMatch.p1 && firstMatch.p2 && firstMatch.isBye) {
                         firstMatch.winner = null;
                         firstMatch.isBye = false;
-                        if (nextRound[0] && nextRound[0].p1 === firstMatch.p1) {
-                            nextRound[0].p1 = null;
-                        }
                     }
-                }
 
-                // Distribusikan pemenang (termasuk yang mendapat BYE) ke babak berikutnya
-                // Jika babak saat ini ganjil, Match #0 (BYE) masuk ke Next Match #0 (p1),
-                // sedangkan Match #1 & #2 masuk ke Next Match #1 (p1 & p2), dst.
-                if (currentRound.length > 1 && currentRound.length % 2 !== 0) {
-                    if (currentRound[0].winner && nextRound[0]) {
-                        nextRound[0].p1 = currentRound[0].winner;
-                    }
-                    for (let mIdx = 1; mIdx < currentRound.length; mIdx++) {
-                        const m = currentRound[mIdx];
-                        if (m.winner) {
-                            const targetNextIdx = Math.ceil(mIdx / 2);
-                            if (nextRound[targetNextIdx]) {
-                                if (mIdx % 2 === 1) nextRound[targetNextIdx].p1 = m.winner;
-                                else nextRound[targetNextIdx].p2 = m.winner;
+                    // Pemetaan khusus babak ganjil:
+                    // - Match #0 (BYE) pemenangnya masuk ke Next Match #0 posisi P1 (melawan pemenang Match #2)
+                    // - Match #1 pemenangnya masuk ke Next Match #0 posisi P2 (lawan si BYE)
+                    // - Match #2 & #3 masuk ke Next Match #1 (p1 & p2), dst.
+                    if (nextRound[0]) {
+                        nextRound[0].p1 = currentRound[0].winner || null; // Peserta BYE di Match #1 Babak Berikutnya
+                        if (currentRound[1] && currentRound[1].winner) {
+                            nextRound[0].p2 = currentRound[1].winner; // Pemenang Match #2 Babak Sebelumnya menjadi lawan Match #1 Babak Berikutnya
+                        } else {
+                            // Jangan hapus p2 jika diisi manual lewat swap
+                            if (nextRound[0].p2 && currentRound[1] && currentRound[1].p1 && currentRound[1].p2 && !currentRound[1].winner) {
+                                // Biarkan
                             }
                         }
                     }
+
+                    // Sisa match berikutnya (mulai dari match index 2 ke atas di currentRound) dipetakan berpasangan ke Next Match index 1, 2, dst.
+                    let remainingMatches = [];
+                    for (let mIdx = 2; mIdx < currentRound.length; mIdx++) {
+                        remainingMatches.push(currentRound[mIdx]);
+                    }
+
+                    for (let remIdx = 0; remIdx < remainingMatches.length; remIdx++) {
+                        const m = remainingMatches[remIdx];
+                        const targetNextMatchIdx = Math.floor(remIdx / 2) + 1; // Mulai dari nextRound[1]
+                        if (nextRound[targetNextMatchIdx]) {
+                            if (remIdx % 2 === 0) {
+                                nextRound[targetNextMatchIdx].p1 = m.winner || null;
+                            } else {
+                                nextRound[targetNextMatchIdx].p2 = m.winner || null;
+                            }
+                        }
+                    }
+
                 } else {
-                    // Distribusi standar berpasangan (0 & 1 -> 0, 2 & 3 -> 1, dst.)
+                    // Distribusi standar genap (Match 0 & 1 -> Next Match 0, dst.)
                     currentRound.forEach((m, mIdx) => {
                         if (m.winner) {
                             const targetNextIdx = Math.floor(mIdx / 2);
@@ -589,7 +599,6 @@
                 const title = document.createElement('div');
                 title.className = 'flex items-center justify-between font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-2 rounded border border-slate-700 sticky top-0 z-10';
                 
-                // Hilangkan tombol + dan - jika berada di Babak Final
                 const controlsHtml = isFinalRound ? `
                     <span class="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 rounded font-mono">1 Match</span>
                 ` : `
@@ -901,7 +910,6 @@
             const roundName = getRoundName(currentRoundIndex, tournamentTree.length);
             logMatchToSpreadsheet(roundName, activeMatch.p1, activeMatch.p2, winnerName, note);
 
-            // Jalankan penyelarasan aliran babak berikutnya (termasuk otomatis BYE di Match #1 jika ganjil)
             syncAllRoundsProgression();
 
             const isFinal = currentRoundIndex === tournamentTree.length - 1;
