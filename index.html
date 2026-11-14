@@ -135,7 +135,7 @@
 
                 <div class="text-center">
                     <span id="current-match-round" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-wider">Babak Penyisihan</span>
-                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">WAKTU: <span id="match-timer" class="text-amber-400 font-mono">10</span>s</h2>
+                    <h2 class="text-base font-black text-slate-200 leading-tight mt-0.5">WAKTU: <span id="match-timer" class="text-amber-400 font-mono">15</span>s</h2>
                     <div class="flex items-center justify-center gap-3 mt-0.5">
                         <button onclick="openSwapModal(currentRoundIndex, currentMatchIndex, true)" class="text-[11px] text-sky-400 hover:text-sky-300 underline font-medium">
                             <i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> Ganti Lawan
@@ -641,7 +641,7 @@
 
         function startTimer() {
             clearInterval(questionTimer);
-            timeLeft = 10;
+            timeLeft = 15;
             document.getElementById('match-timer').innerText = timeLeft;
 
             questionTimer = setInterval(() => {
@@ -660,11 +660,11 @@
             p2AnswerCount++;
 
             if (p1AnswerCount >= 20 && activeMatch && !activeMatch.winner) {
-                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} mencapai batas 20 soal`);
+                evaluateMaxAnswersLimit();
                 return;
             }
             if (p2AnswerCount >= 20 && activeMatch && !activeMatch.winner) {
-                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} mencapai batas 20 soal`);
+                evaluateMaxAnswersLimit();
                 return;
             }
 
@@ -750,12 +750,9 @@
                 return;
             }
 
-            if (playerNum === 1 && p1AnswerCount >= 20) {
-                finishMatch(activeMatch.p2, `${activeMatch.p2} menang karena ${activeMatch.p1} sudah menjawab 20 soal`);
-                return;
-            }
-            if (playerNum === 2 && p2AnswerCount >= 20) {
-                finishMatch(activeMatch.p1, `${activeMatch.p1} menang karena ${activeMatch.p2} sudah menjawab 20 soal`);
+            // Jika kedua pemain sudah mencapai batas 20x menjawab
+            if (p1AnswerCount >= 20 || p2AnswerCount >= 20) {
+                evaluateMaxAnswersLimit();
                 return;
             }
 
@@ -763,6 +760,40 @@
                 loadPlayerQuestion(playerNum);
                 startTimer();
             }
+        }
+
+        function evaluateMaxAnswersLimit() {
+            if (!activeMatch || activeMatch.winner) return;
+
+            // Pemenang dinilai dari jumlah benar terbanyak (skor benar - salah, atau total benar tertinggi)
+            let p1Net = p1Score - p1Wrong;
+            let p2Net = p2Score - p2Wrong;
+
+            let winnerName = "";
+            let note = "";
+
+            if (p1Net > p2Net) {
+                winnerName = activeMatch.p1;
+                note = `${activeMatch.p1} menang berdasarkan jumlah benar terbanyak (${p1Score} Benar, ${p1Wrong} Salah vs ${p2Score} Benar, ${p2Wrong} Salah)`;
+            } else if (p2Net > p1Net) {
+                winnerName = activeMatch.p2;
+                note = `${activeMatch.p2} menang berdasarkan jumlah benar terbanyak (${p2Score} Benar, ${p2Wrong} Salah vs ${p1Score} Benar, ${p1Wrong} Salah)`;
+            } else {
+                // Jika selisih bersih sama, bandingkan total benar murni
+                if (p1Score > p2Score) {
+                    winnerName = activeMatch.p1;
+                    note = `${activeMatch.p1} menang berdasarkan total benar tertinggi (${p1Score} Benar)`;
+                } else if (p2Score > p1Score) {
+                    winnerName = activeMatch.p2;
+                    note = `${activeMatch.p2} menang berdasarkan total benar tertinggi (${p2Score} Benar)`;
+                } else {
+                    // Jika benar dan salah sama persis, pilih P1 atau tentukan secara acak adil
+                    winnerName = Math.random() < 0.5 ? activeMatch.p1 : activeMatch.p2;
+                    note = `${winnerName} menang lewat undian karena skor benar & salah sama persis setelah 20 soal`;
+                }
+            }
+
+            finishMatch(winnerName, note);
         }
 
         function updateRopeVisual(p1Pos, p2Pos) {
