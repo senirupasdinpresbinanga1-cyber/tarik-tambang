@@ -481,22 +481,65 @@
                 roundNum++;
             }
 
-            advanceByes();
+            syncAllRoundsProgression();
             renderBracket();
         }
 
-        function advanceByes() {
-            if (tournamentTree.length < 2) return;
-            const r1 = tournamentTree[0];
-            const r2 = tournamentTree[1];
-            if (!r2) return;
-            r1.forEach((m, idx) => {
-                if (m.isBye && m.winner) {
-                    const nextMatchIdx = Math.floor(idx / 2);
-                    if (idx % 2 === 0) r2[nextMatchIdx].p1 = m.winner;
-                    else r2[nextMatchIdx].p2 = m.winner;
+        // Menyelaraskan aliran pemenang & BYE di semua babak (Babak 1, Babak 2, Perempat Final, Semifinal, Final)
+        // Agar jika ada babak dengan jumlah match ganjil, Match #1 otomatis mendapat BYE dan lolos ke babak selanjutnya
+        function syncAllRoundsProgression() {
+            for (let rIdx = 0; rIdx < tournamentTree.length - 1; rIdx++) {
+                const currentRound = tournamentTree[rIdx];
+                const nextRound = tournamentTree[rIdx + 1];
+
+                // Cek apakah jumlah match di babak ini ganjil (> 1)
+                if (currentRound.length > 1 && currentRound.length % 2 !== 0) {
+                    const firstMatch = currentRound[0];
+                    // Jika Match #1 hanya memiliki 1 pemain (p1 terisi, p2 kosong) dan belum selesai bertanding
+                    if (firstMatch.p1 && !firstMatch.p2 && !firstMatch.winner) {
+                        firstMatch.winner = firstMatch.p1;
+                        firstMatch.isBye = true;
+                    }
+                    // Jika p2 kemudian diisi manual oleh guru, batalkan status BYE otomatisnya
+                    else if (firstMatch.p1 && firstMatch.p2 && firstMatch.isBye) {
+                        firstMatch.winner = null;
+                        firstMatch.isBye = false;
+                        if (nextRound[0] && nextRound[0].p1 === firstMatch.p1) {
+                            nextRound[0].p1 = null;
+                        }
+                    }
                 }
-            });
+
+                // Distribusikan pemenang (termasuk yang mendapat BYE) ke babak berikutnya
+                // Jika babak saat ini ganjil, Match #0 (BYE) masuk ke Next Match #0 (p1),
+                // sedangkan Match #1 & #2 masuk ke Next Match #1 (p1 & p2), dst.
+                if (currentRound.length > 1 && currentRound.length % 2 !== 0) {
+                    if (currentRound[0].winner && nextRound[0]) {
+                        nextRound[0].p1 = currentRound[0].winner;
+                    }
+                    for (let mIdx = 1; mIdx < currentRound.length; mIdx++) {
+                        const m = currentRound[mIdx];
+                        if (m.winner) {
+                            const targetNextIdx = Math.ceil(mIdx / 2);
+                            if (nextRound[targetNextIdx]) {
+                                if (mIdx % 2 === 1) nextRound[targetNextIdx].p1 = m.winner;
+                                else nextRound[targetNextIdx].p2 = m.winner;
+                            }
+                        }
+                    }
+                } else {
+                    // Distribusi standar berpasangan (0 & 1 -> 0, 2 & 3 -> 1, dst.)
+                    currentRound.forEach((m, mIdx) => {
+                        if (m.winner) {
+                            const targetNextIdx = Math.floor(mIdx / 2);
+                            if (nextRound[targetNextIdx]) {
+                                if (mIdx % 2 === 0) nextRound[targetNextIdx].p1 = m.winner;
+                                else nextRound[targetNextIdx].p2 = m.winner;
+                            }
+                        }
+                    });
+                }
+            }
         }
 
         function getRoundName(roundIdx, totalRounds) {
@@ -510,6 +553,7 @@
         }
 
         function adjustRoundMatches(rIdx, delta) {
+            if (rIdx === tournamentTree.length - 1) return; // Tidak diizinkan mengubah jumlah match di Babak Final
             let round = tournamentTree[rIdx];
             if (!round) return;
 
@@ -524,6 +568,7 @@
                     return;
                 }
             }
+            syncAllRoundsProgression();
             renderBracket();
         }
 
@@ -537,18 +582,27 @@
             }
 
             tournamentTree.forEach((round, rIdx) => {
+                const isFinalRound = (rIdx === tournamentTree.length - 1);
                 const roundCol = document.createElement('div');
                 roundCol.className = 'flex flex-col justify-around py-2 space-y-4 min-w-[215px]';
                 
                 const title = document.createElement('div');
                 title.className = 'flex items-center justify-between font-bold text-[11px] uppercase tracking-wider text-amber-400 mb-1 bg-slate-800 p-2 rounded border border-slate-700 sticky top-0 z-10';
-                title.innerHTML = `
-                    <span>${getRoundName(rIdx, tournamentTree.length)}</span>
+                
+                // Hilangkan tombol + dan - jika berada di Babak Final
+                const controlsHtml = isFinalRound ? `
+                    <span class="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-300 rounded font-mono">1 Match</span>
+                ` : `
                     <div class="flex items-center gap-1">
                         <button onclick="adjustRoundMatches(${rIdx}, -1)" title="Kurangi Match" class="w-5 h-5 bg-slate-700 hover:bg-slate-600 text-white rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-minus"></i></button>
                         <span class="text-[10px] px-1 font-mono">${round.length}</span>
                         <button onclick="adjustRoundMatches(${rIdx}, 1)" title="Tambah Match" class="w-5 h-5 bg-slate-700 hover:bg-slate-600 text-white rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-plus"></i></button>
                     </div>
+                `;
+
+                title.innerHTML = `
+                    <span>${getRoundName(rIdx, tournamentTree.length)}</span>
+                    ${controlsHtml}
                 `;
                 roundCol.appendChild(title);
 
@@ -847,13 +901,8 @@
             const roundName = getRoundName(currentRoundIndex, tournamentTree.length);
             logMatchToSpreadsheet(roundName, activeMatch.p1, activeMatch.p2, winnerName, note);
 
-            const nextRoundIdx = currentRoundIndex + 1;
-            if (nextRoundIdx < tournamentTree.length) {
-                const nextMatchIdx = Math.floor(currentMatchIndex / 2);
-                const nextMatch = tournamentTree[nextRoundIdx][nextMatchIdx];
-                if (currentMatchIndex % 2 === 0) nextMatch.p1 = winnerName;
-                else nextMatch.p2 = winnerName;
-            }
+            // Jalankan penyelarasan aliran babak berikutnya (termasuk otomatis BYE di Match #1 jika ganjil)
+            syncAllRoundsProgression();
 
             const isFinal = currentRoundIndex === tournamentTree.length - 1;
             document.getElementById('winner-title').innerText = isFinal ? "🏆 JUARA TURNAMEN 🏆" : "PEMENANG DUEL";
@@ -926,7 +975,10 @@
             const targetMatch = round[swapTargetMIdx];
             targetMatch.p1 = newP1;
             targetMatch.p2 = newP2;
+            targetMatch.winner = null;
+            targetMatch.isBye = false;
 
+            syncAllRoundsProgression();
             closeSwapModal();
             renderBracket();
             if (swapFromArena && targetMatch.p1 && targetMatch.p2) startMatch(swapTargetRIdx, swapTargetMIdx);
