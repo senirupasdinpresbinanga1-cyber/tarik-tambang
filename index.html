@@ -441,17 +441,30 @@
             }
 
             let shuffled = [...RAW_STUDENTS].sort(() => Math.random() - 0.5);
-            
-            let round1Count = Math.ceil(shuffled.length / 2);
+            let totalPlayers = shuffled.length;
+            let round1Count = Math.ceil(totalPlayers / 2);
             let round1Matches = [];
             let playerIdx = 0;
 
-            for (let i = 0; i < round1Count; i++) {
-                let p1 = shuffled[playerIdx++] || null;
-                let p2 = shuffled[playerIdx++] || null;
-                let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
-                if (p1 && !p2) { match.winner = p1; match.isBye = true; }
+            // Jika jumlah siswa ganjil, tempatkan BYE di Match pertama (Match #1 / index 0)
+            if (totalPlayers % 2 !== 0) {
+                let p1 = shuffled[playerIdx++];
+                let match = { id: `R1-M0`, p1: p1, p2: null, winner: p1, isBye: true };
                 round1Matches.push(match);
+
+                for (let i = 1; i < round1Count; i++) {
+                    let p1_m = shuffled[playerIdx++] || null;
+                    let p2_m = shuffled[playerIdx++] || null;
+                    let m = { id: `R1-M${i}`, p1: p1_m, p2: p2_m, winner: null, isBye: false };
+                    round1Matches.push(m);
+                }
+            } else {
+                for (let i = 0; i < round1Count; i++) {
+                    let p1 = shuffled[playerIdx++] || null;
+                    let p2 = shuffled[playerIdx++] || null;
+                    let match = { id: `R1-M${i}`, p1: p1, p2: p2, winner: null, isBye: false };
+                    round1Matches.push(match);
+                }
             }
 
             tournamentTree = [round1Matches];
@@ -750,7 +763,6 @@
                 return;
             }
 
-            // Jika kedua pemain sudah mencapai batas 20x menjawab
             if (p1AnswerCount >= 20 || p2AnswerCount >= 20) {
                 evaluateMaxAnswersLimit();
                 return;
@@ -765,7 +777,6 @@
         function evaluateMaxAnswersLimit() {
             if (!activeMatch || activeMatch.winner) return;
 
-            // Pemenang dinilai dari jumlah benar terbanyak (skor benar - salah, atau total benar tertinggi)
             let p1Net = p1Score - p1Wrong;
             let p2Net = p2Score - p2Wrong;
 
@@ -779,7 +790,6 @@
                 winnerName = activeMatch.p2;
                 note = `${activeMatch.p2} menang berdasarkan jumlah benar terbanyak (${p2Score} Benar, ${p2Wrong} Salah vs ${p1Score} Benar, ${p1Wrong} Salah)`;
             } else {
-                // Jika selisih bersih sama, bandingkan total benar murni
                 if (p1Score > p2Score) {
                     winnerName = activeMatch.p1;
                     note = `${activeMatch.p1} menang berdasarkan total benar tertinggi (${p1Score} Benar)`;
@@ -787,7 +797,6 @@
                     winnerName = activeMatch.p2;
                     note = `${activeMatch.p2} menang berdasarkan total benar tertinggi (${p2Score} Benar)`;
                 } else {
-                    // Jika benar dan salah sama persis, pilih P1 atau tentukan secara acak adil
                     winnerName = Math.random() < 0.5 ? activeMatch.p1 : activeMatch.p2;
                     note = `${winnerName} menang lewat undian karena skor benar & salah sama persis setelah 20 soal`;
                 }
